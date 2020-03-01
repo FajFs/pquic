@@ -1849,22 +1849,21 @@ void picoquic_log_transport_extension(FILE* F, picoquic_cnx_t* cnx, int log_cnxi
     }
 }
 
-void picoquic_log_congestion_state(FILE* F, picoquic_cnx_t* cnx, uint64_t current_time)
+void picoquic_log_congestion_state(FILE* F, picoquic_cnx_t* cnx,
+uint64_t current_time)
 {
-    if (F != NULL) {
-        picoquic_path_t * path_x = cnx->path[0];
-
-        fprintf(F, "%" PRIx64 ": ", picoquic_val64_connection_id(picoquic_get_logging_cnxid(cnx)));
-        picoquic_log_time(F, cnx, current_time, "T= ", ", ");
-        fprintf(F, "cwin: %d,", (int)path_x->cwin);
-        fprintf(F, "flight: %d,", (int)path_x->bytes_in_transit);
-        fprintf(F, "nb_ret: %d,", (int)cnx->nb_retransmission_total);
-        fprintf(F, "rtt_min: %d,", (int)path_x->rtt_min);
-        fprintf(F, "rtt: %d,", (int)path_x->smoothed_rtt);
-        fprintf(F, "rtt_var: %d,", (int)path_x->rtt_variant);
-        fprintf(F, "max_ack_delay: %d,", (int)path_x->max_ack_delay);
-        fprintf(F, "state: %d\n", (int)cnx->cnx_state);
-    }
+     for (int i = 0; i < cnx->nb_paths; i++) {
+         picoquic_path_t *p = cnx->path[i];
+         printf("path: %p,", p);
+         printf("cwin: %d,", (int) p->cwin);
+         printf("flight: %d,", (int) p->bytes_in_transit);
+         printf("nb_ret: %d,", (int) cnx->nb_retransmission_total);
+         printf("rtt_min: %d,", (int) p->rtt_min);
+         printf("rtt: %d,", (int) p->smoothed_rtt);
+         printf("rtt_var: %d,", (int) p->rtt_variant);
+         printf("max_ack_delay: %d,", (int) p->max_ack_delay);
+         printf("state: %d\n", (int) cnx->cnx_state);
+     }
 }
 
 /*
