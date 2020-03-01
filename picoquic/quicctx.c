@@ -385,6 +385,7 @@ void picoquic_free_plugins(protoop_plugin_t *plugins)
         /* This remains safe to do this, as the memory of the frame context will be freed when cnx will */
         queue_free(current_p->block_queue_cc);
         queue_free(current_p->block_queue_non_cc);
+        //fqcodel_destroy(current_p->fqcodel_block_queue);
         destroy_memory_management(current_p);
         free(current_p);
     }
@@ -2586,19 +2587,31 @@ size_t reserve_frames(picoquic_cnx_t* cnx, uint8_t nb_frames, reserve_frame_slot
         block->total_bytes += slots[i].nb_bytes;
         block->is_congestion_controlled |= slots[i].is_congestion_controlled;
         block->low_priority &= slots[i].low_priority;   // it is higher priority as soon as a higher priority slot is present
+        //if one frame is compatible with fqcodel make block compatible
+        block->is_fqcompatible |= slots[i].is_fqcompatible;
     }
     block->frames = slots;
     int err = 0;
-    if (block->is_congestion_controlled) {
-        err = queue_enqueue(cnx->current_plugin->block_queue_cc, block);
+
+    //Only consider placing in fqcodel if both CC and compatible
+    if(block->is_fqcompatible && block->is_congestion_controlled){
+          err = fqcodel_enqueue(cnx->current_plugin->fqcodel_block_queue, block);
+          printf("QUEUING FQCODEL\n");
+    } else if (block->is_congestion_controlled) {
+        err = queue_enqueue(cnx->current_plugin->block_queue_cc, block); 
+        printf("QUEUING CC\n");       
     } else {
         err = queue_enqueue(cnx->current_plugin->block_queue_non_cc, block);
+        printf("QUEUING NON CC\n");  
     }
+    fflush(stdout);
+
     if (err) {
         free(block);
         POP_LOG_CTX(cnx);
         return 0;
     }
+    //printf("DATAGRAM CC QUEUE Size: %zu\n", queue_size(cnx->current_plugin->block_queue_cc));
     LOG {
         char ftypes_str[250];
         size_t ftypes_ofs = 0;
@@ -2621,7 +2634,10 @@ reserve_frame_slot_t* cancel_head_reservation(picoquic_cnx_t* cnx, uint8_t *nb_f
     PUSH_LOG_CTX(cnx, "\"plugin\": \"%s\", \"protoop\": \"%s\", \"anchor\": \"%s\"",  cnx->current_plugin->name, cnx->current_protoop->name, pluglet_type_name(cnx->current_anchor));
 
     queue_t *block_queue = congestion_controlled ? cnx->current_plugin->block_queue_cc : cnx->current_plugin->block_queue_non_cc;
+    
     reserve_frames_block_t *block = queue_dequeue(block_queue);
+    
+    //fqcodel_dequeue(cnx->current_plugin->fqcodel_block_queue);
     if (block == NULL) {
         *nb_frames = 0;
         POP_LOG_CTX(cnx);

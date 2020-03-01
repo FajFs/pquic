@@ -1760,7 +1760,7 @@ protoop_arg_t has_congestion_controlled_plugin_frames_to_send(picoquic_cnx_t *cn
 
     if(p) {
         do {
-            if (queue_peek(p->block_queue_cc)) {
+            if (queue_peek(p->block_queue_cc) || fqcodel_peek(p->fqcodel_block_queue)) {
                 ret = 1;
                 break;
             }
@@ -2816,18 +2816,30 @@ size_t picoquic_frame_fair_reserve(picoquic_cnx_t *cnx, picoquic_path_t *path_x,
     bool should_wake_now = false;
     size_t queued_bytes = 0;
 
+    
     p = cnx->first_drr;
-
-    /* First pass: consider only under-rated plugins with CC */
+    /* First pass: consider only plugins with data in fqcodel */
     do {
-        if (p->params.rate_unlimited || total_plugin_bytes_in_flight < max_plugin_cwin){
-            while ((block = queue_peek(p->block_queue_cc)) != NULL &&
+        if (p->params.rate_unlimited || total_plugin_bytes_in_flight < max_plugin_cwin)
+        {
+            printf("FRAME SCHEDULING\n\tCONSIDERING FQCODEL \n");
+            while ((block = fqcodel_peek(p->fqcodel_block_queue)) != NULL &&
                    queued_bytes + block->total_bytes < frame_mss &&
                    !(stream != NULL && (!p->params.rate_unlimited && plugin_use >= max_plugin_cwin)) &&
                    (!block->is_congestion_controlled || path_x->bytes_in_transit < path_x->cwin))
             {
                 should_wake_now |= !block->low_priority;    // we should wake now as soon as there is a high priority block
-                block = (reserve_frames_block_t *) queue_dequeue(p->block_queue_cc);
+                block = fqcodel_dequeue(p->fqcodel_block_queue);
+                if(!block)
+                {
+                    printf("failed to dequeue fqcodel");
+                }
+                else
+                {
+                    printf("SENDING %lu BYTES FROM FQCODEL\n",block->total_bytes);
+                }
+                
+
                 for (int i = 0; i < block->nb_frames; i++) {
                     /* Not the most efficient way, but will do the trick */
                     block->frames[i].p = p;
@@ -2850,7 +2862,39 @@ size_t picoquic_frame_fair_reserve(picoquic_cnx_t *cnx, picoquic_path_t *path_x,
         total_plugin_bytes_in_flight += p->bytes_in_flight;
     } while ((p = get_next_plugin(cnx, p)) != cnx->first_drr);
     p = cnx->first_drr;
-    /* Second pass: consider all plugins with non CC */
+    /* Second pass: consider only under-rated plugins with CC */
+    do {
+        if (p->params.rate_unlimited || total_plugin_bytes_in_flight < max_plugin_cwin){
+            while ((block = queue_peek(p->block_queue_cc)) != NULL &&
+                   queued_bytes + block->total_bytes < frame_mss &&
+                   !(stream != NULL && (!p->params.rate_unlimited && plugin_use >= max_plugin_cwin)) &&
+                   (!block->is_congestion_controlled || path_x->bytes_in_transit < path_x->cwin))
+            {
+                should_wake_now |= !block->low_priority;    // we should wake now as soon as there is a high priority block                
+                block = queue_dequeue(p->block_queue_cc);
+                for (int i = 0; i < block->nb_frames; i++) {
+                    /* Not the most efficient way, but will do the trick */
+                    block->frames[i].p = p;
+                    queue_enqueue(cnx->reserved_frames, &block->frames[i]);
+                }
+                /* Update queued bytes counter */
+                queued_bytes += block->total_bytes;
+                LOG {
+                    char ftypes_str[250];
+                    size_t ftypes_ofs = 0;
+                    for (int i = 0; i < block->nb_frames; i++) {
+                        ftypes_ofs += snprintf(ftypes_str + ftypes_ofs, sizeof(ftypes_str) - ftypes_ofs, "%lu%s", block->frames[i].frame_type, i < block->nb_frames - 1 ? ", " : "");
+                    }
+                    LOG_EVENT(cnx, "PLUGINS", "ENQUEUE_FRAMES", "FRAME_FAIR_RESERVE_UNDER_RATED", "{\"plugin\": \"%s\", \"nb_frames\": %d, \"total_bytes\": %lu, \"is_cc\": %d, \"frames\": [%s]}", p->name, block->nb_frames, block->total_bytes, block->is_congestion_controlled, ftypes_str);
+                }
+                /* Free the block */
+                free(block);
+            }
+        }
+        total_plugin_bytes_in_flight += p->bytes_in_flight;
+    } while ((p = get_next_plugin(cnx, p)) != cnx->first_drr);
+        p = cnx->first_drr;
+    /* Thrid pass: consider all plugins with non CC */
     do {
         while ((block = queue_peek(p->block_queue_non_cc)) != NULL &&
                 queued_bytes + block->total_bytes < frame_mss &&
@@ -2889,7 +2933,6 @@ size_t picoquic_frame_fair_reserve(picoquic_cnx_t *cnx, picoquic_path_t *path_x,
             cnx->wake_now = 1;
         }
     }
-
     return queued_bytes;
 }
 
@@ -2932,11 +2975,12 @@ protoop_arg_t schedule_frames_on_path(picoquic_cnx_t *cnx)
 
     /* First enqueue frames that can be fairly sent, if any */
     /* Only schedule new frames if there is no planned frames */
+    //printf("RESERVED FRAMES BEFORE: %zu\n", queue_size(cnx->reserved_frames));
     if (queue_peek(cnx->reserved_frames) == NULL) {
         stream = picoquic_schedule_next_stream(cnx, send_buffer_min_max - checksum_overhead - length, path_x);
         picoquic_frame_fair_reserve(cnx, path_x, stream, send_buffer_min_max - checksum_overhead - length);
     }
-
+    //printf("RESERVED FRAMES AFTER: %zu\n", queue_size(cnx->reserved_frames));
     char * retrans_reason = NULL;
     if (ret == 0 && retransmit_possible &&
         (length = picoquic_retransmit_needed(cnx, pc, path_x, current_time, packet, send_buffer_min_max, &is_cleartext_mode, &header_length, &retrans_reason)) > 0) {
@@ -3309,6 +3353,7 @@ protoop_arg_t prepare_packet_ready(picoquic_cnx_t *cnx)
 
     if (length == 0) {
         packet->pc = pc;
+
         ret = picoquic_schedule_frames_on_path(cnx, packet, send_buffer_max, current_time, retransmit_p,
                                       from_path, reason, &path_x, &length, &header_length);
 

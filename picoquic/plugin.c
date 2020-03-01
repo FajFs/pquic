@@ -435,6 +435,14 @@ protoop_plugin_t* plugin_initialize(char *first_line) {
         free(p);
         return NULL;
     }
+    //add a new queueing routine fq_codel per plugin
+    p->fqcodel_block_queue = fqcodel_init();
+    if (!p->fqcodel_block_queue) {
+        printf("Cannot allocate memory for sending FQ CODEL!\n");
+        free(p->fqcodel_block_queue);
+        free(p);
+    return NULL;
+    }
     /* TODO make this value configurable */
     p->bytes_in_flight = 0;
     p->bytes_total = 0;

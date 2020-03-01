@@ -32,6 +32,7 @@
 #include "picosocks.h"
 #include "uthash.h"
 #include "plugin.h"
+#include "fqCoDel.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -507,6 +508,8 @@ typedef struct protoop_plugin {
     char name[PROTOOPPLUGINNAME_MAX];
     queue_t *block_queue_cc; /* Send reservation queue for congestion controlled frames */
     queue_t *block_queue_non_cc; /* Send reservation queue for non-congestion controlled frames */
+    fqcodel_schedule_data_t *fqcodel_block_queue; /* Send reservation queue running fqcodel */
+
     uint64_t bytes_in_flight; /* Number of bytes in flight due to generated frames */
     uint64_t bytes_total; /* Number of total bytes by generated frames, for monitoring */
     uint64_t frames_total; /* Number of total generated frames, for monitoring */

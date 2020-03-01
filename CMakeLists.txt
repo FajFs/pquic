@@ -72,6 +72,13 @@ SET(PICOQUIC_LIBRARY_FILES
         picoquic/michelfralloc/sbrk.h
         picoquic/michelfralloc/michelfralloc.c
         picoquic/michelfralloc/michelfralloc.h
+        picoquic/jenkinsHash.c
+        picoquic/jenkinsHash.h
+        picoquic/fqCoDel.c
+        picoquic/fqCoDel.h
+        picoquic/coDel.c
+        picoquic/coDel.h
+        picoquic/list.h
 )
 
 SET(PICOQUIC_TEST_LIBRARY_FILES
