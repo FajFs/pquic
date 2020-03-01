@@ -235,7 +235,8 @@ typedef struct st_plugin_struct_metadata plugin_struct_metadata_t;
 typedef struct reserve_frame_slot {
     size_t nb_bytes;
     uint8_t is_congestion_controlled:1;
-    bool low_priority:1;
+    bool low_priority;
+    uint8_t is_fqcompatible;
     uint64_t frame_type;
     protoop_plugin_t *p; /* Whathever you place here, it will be overwritten */
     /* TODO FIXME position */
@@ -246,6 +247,7 @@ typedef struct reserve_frames_block {
     size_t total_bytes;
     uint8_t nb_frames;
     uint8_t is_congestion_controlled:1;
+    uint8_t is_fqcompatible;
     bool low_priority:1; // if false, picoquic will wake as soon as it is reserved
     /* The following pointer is an array! */
     reserve_frame_slot_t *frames;
