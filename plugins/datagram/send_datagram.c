@@ -1,9 +1,10 @@
 #include "../helpers.h"
 #include "bpf.h"
 
+
 protoop_arg_t send_datagram_frame(picoquic_cnx_t* cnx)
 {
-    char *payload = (char *) get_cnx(cnx, AK_CNX_INPUT, 0);
+    uint8_t *payload = (uint8_t *) get_cnx(cnx, AK_CNX_INPUT, 0);
     int len = (int) get_cnx(cnx, AK_CNX_INPUT, 1);
     uint64_t datagram_id = 0;
     datagram_memory_t *m = get_datagram_memory(cnx);
@@ -49,9 +50,19 @@ protoop_arg_t send_datagram_frame(picoquic_cnx_t* cnx)
         free_head_datagram_reserved(m, cnx);
     }
 
+
+
     frame->datagram_id = datagram_id;
     my_memcpy(frame->datagram_data_ptr, payload, (size_t) len);
     slot->frame_ctx = frame;
+
+    //set the slot to be handled by fqcodel
+    slot->is_fqcompatible = 1;
+            //All checks ok
+    //Ready to classify data into fq_codel
+    // PROTOOP_PRINTF(cnx, "Skeety: ");
+    // PROTOOP_PRINTF(cnx, "%d", frame->datagram_data_ptr[0]);
+    // PROTOOP_PRINTF(cnx, "\n");
 
     size_t reserved_size = reserve_frames(cnx, 1, slot);
     if (reserved_size < slot->nb_bytes) {
