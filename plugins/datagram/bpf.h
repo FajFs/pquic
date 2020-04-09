@@ -15,14 +15,30 @@
 #define APP_SOCKET 1
 #define PLUGIN_SOCKET 0
 
-#define SEND_BUFFER 900000
+#define SEND_BUFFER 10000000
 #define RECV_BUFFER 500000
 
+#ifdef FQ_COMPATIBLE
+#define FQ 1
+#else
+#define FQ 0
+#endif
 #ifdef DATAGRAM_CONGESTION_CONTROLLED
 #define DCC true
 #else
 #define DCC false
 #endif
+
+#define ICMP_V4 0x1
+#define ICMP_V6 0x80
+
+typedef struct st_ipheader{
+    uint8_t      protocol;
+    uint32_t     source_ip;
+    uint32_t     destination_ip;
+    uint16_t     source_port;
+    uint16_t     destination_port;
+} ipheader_t;
 
 typedef struct st_datagram_frame_t {
     uint64_t datagram_id;
@@ -220,4 +236,28 @@ static __attribute__((always_inline)) void *my_malloc_on_sending_buffer(datagram
         p = my_malloc(cnx, size);
     }
     return p;
+}
+
+
+static __attribute__((always_inline)) uint32_t parse_ip_packet(uint8_t *payload, picoquic_cnx_t *cnx) {
+    uint32_t key;
+    ipheader_t * iphdr = my_malloc(cnx, sizeof(ipheader_t));
+
+    my_memcpy(&iphdr->protocol, payload               + 9, sizeof(uint8_t));
+    //if ip packet is icmp, set the key to zero to avoid queue management in fq
+    if(iphdr->protocol == ICMP_V4 || iphdr->protocol == ICMP_V6)
+    {
+        my_free(cnx, iphdr);
+        return 0;
+    }
+    my_memcpy(&iphdr->source_ip, payload              + 12, sizeof(uint32_t));
+    my_memcpy(&iphdr->destination_ip, payload         + 16, sizeof(uint32_t));
+    my_memcpy(&iphdr->source_port, payload            + 20, sizeof(uint16_t));
+    my_memcpy(&iphdr->destination_port, payload       + 22, sizeof(uint16_t));
+
+    key = (uint32_t)iphdr->protocol + iphdr->source_ip + iphdr->destination_ip + (uint32_t)iphdr->source_port + (uint32_t)iphdr->destination_port;
+    
+    //TODO: change into hash instead of adder
+    my_free(cnx, iphdr);
+    return key;
 }

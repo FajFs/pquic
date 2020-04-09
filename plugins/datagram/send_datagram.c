@@ -50,19 +50,16 @@ protoop_arg_t send_datagram_frame(picoquic_cnx_t* cnx)
         free_head_datagram_reserved(m, cnx);
     }
 
-
-
     frame->datagram_id = datagram_id;
     my_memcpy(frame->datagram_data_ptr, payload, (size_t) len);
     slot->frame_ctx = frame;
 
     //set the slot to be handled by fqcodel
-    slot->is_fqcompatible = 1;
-            //All checks ok
+
+    slot->is_fqcompatible = FQ;
+    if(FQ)  slot->fq_key = parse_ip_packet(payload, cnx);
     //Ready to classify data into fq_codel
-    // PROTOOP_PRINTF(cnx, "Skeety: ");
-    // PROTOOP_PRINTF(cnx, "%d", frame->datagram_data_ptr[0]);
-    // PROTOOP_PRINTF(cnx, "\n");
+    PROTOOP_PRINTF(cnx, "PROTOCOL %d\n",slot->fq_key);
 
     size_t reserved_size = reserve_frames(cnx, 1, slot);
     if (reserved_size < slot->nb_bytes) {
@@ -70,9 +67,16 @@ protoop_arg_t send_datagram_frame(picoquic_cnx_t* cnx)
         my_free(cnx, frame->datagram_data_ptr);
         my_free(cnx, frame);
         my_free(cnx, slot);
+        //my_free(cnx, tmp);
         return 1;
     }
+    if(FQ && slot->nb_frames_to_drop > 0)
+    {
+        m->send_buffer -= slot->nb_frames_to_drop;
+        PROTOOP_PRINTF(cnx, "DROPPING %d BYTES\n", slot->nb_frames_to_drop);
+    }
     m->send_buffer += frame->length;
-    PROTOOP_PRINTF(cnx, "Send buffer size %d\n", m->send_buffer);
+    PROTOOP_PRINTF(cnx, "Memes %d\n", m->send_buffer);
+
     return 0;
 }
