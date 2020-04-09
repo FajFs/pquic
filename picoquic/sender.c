@@ -2816,30 +2816,20 @@ size_t picoquic_frame_fair_reserve(picoquic_cnx_t *cnx, picoquic_path_t *path_x,
     bool should_wake_now = false;
     size_t queued_bytes = 0;
 
-    
     p = cnx->first_drr;
     /* First pass: consider only plugins with data in fqcodel */
     do {
-        if (p->params.rate_unlimited || total_plugin_bytes_in_flight < max_plugin_cwin)
-        {
-            printf("FRAME SCHEDULING\n\tCONSIDERING FQCODEL \n");
+
+        if (p->params.rate_unlimited || total_plugin_bytes_in_flight < max_plugin_cwin){
             while ((block = fqcodel_peek(p->fqcodel_block_queue)) != NULL &&
                    queued_bytes + block->total_bytes < frame_mss &&
                    !(stream != NULL && (!p->params.rate_unlimited && plugin_use >= max_plugin_cwin)) &&
                    (!block->is_congestion_controlled || path_x->bytes_in_transit < path_x->cwin))
             {
+                            printf("FRAME SCHEDULING\n\tCONSIDERING FQCODEL \n");
                 should_wake_now |= !block->low_priority;    // we should wake now as soon as there is a high priority block
-                block = fqcodel_dequeue(p->fqcodel_block_queue);
-                if(!block)
-                {
-                    printf("failed to dequeue fqcodel");
-                }
-                else
-                {
-                    printf("SENDING %lu BYTES FROM FQCODEL\n",block->total_bytes);
-                }
-                
-
+                block = (reserve_frames_block_t *)fqcodel_dequeue(p->fqcodel_block_queue);               
+                if(block == NULL) continue;
                 for (int i = 0; i < block->nb_frames; i++) {
                     /* Not the most efficient way, but will do the trick */
                     block->frames[i].p = p;
@@ -2861,6 +2851,9 @@ size_t picoquic_frame_fair_reserve(picoquic_cnx_t *cnx, picoquic_path_t *path_x,
         }
         total_plugin_bytes_in_flight += p->bytes_in_flight;
     } while ((p = get_next_plugin(cnx, p)) != cnx->first_drr);
+
+    
+    
     p = cnx->first_drr;
     /* Second pass: consider only under-rated plugins with CC */
     do {
@@ -2922,6 +2915,9 @@ size_t picoquic_frame_fair_reserve(picoquic_cnx_t *cnx, picoquic_path_t *path_x,
         }
         total_plugin_bytes_in_flight += p->bytes_in_flight;
     } while ((p = get_next_plugin(cnx, p)) != cnx->first_drr);
+
+    
+
     /* Now we put all we could */
     cnx->first_drr = get_next_plugin(cnx, p);
     cnx->wake_now = 0;
