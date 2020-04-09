@@ -64,7 +64,7 @@ class KiteTopo(Topo):
             opts['bw_a'] = opts['bw']
             opts['bw_b'] = opts['bw']
 
-        generic_opts = {'delay': '5ms', 'max_queue_size': 3 * 174}
+        generic_opts = {'delay': '0ms', 'max_queue_size': 3 * 174}
         self.r1 = self.addNode('r1', cls=LinuxRouter)
         self.r2 = self.addNode('r2', cls=LinuxRouter)
         self.r3 = self.addNode('r3', cls=LinuxRouter)
@@ -261,7 +261,8 @@ def setup_net(net, ip_tun=True, quic_tun=True, gdb=False, tcpdump=False, multipa
         else:
             net['cl'].cmd('./picoquicvpn {} 10.2.2.2 4443 2>&1 > log_client.log &'.format(plugins))
 
-    net['web'].cmd(web_cmd)
+    #net['web'].cmd(web_cmd)
+    net['web'].cmd('netserver')
     sleep(1)
 
 
@@ -281,9 +282,9 @@ def teardown_net(net):
 
 def run():
     net_cleanup()
-    net = Mininet(KiteTopo(bw_a=100, bw_b=100, delay_ms_a=10, delay_ms_b=10, loss_a=0, loss_b=0), link=TCLink, autoStaticArp=True, switch=OVSBridge, controller=None)
+    net = Mininet(KiteTopo(bw_a=60, bw_b=60, delay_ms_a=10, delay_ms_b=10, loss_a=0, loss_b=0), link=TCLink, autoStaticArp=True, switch=OVSBridge, controller=None)
     net.start()
-    setup_net(net, ip_tun=True, quic_tun=True, gdb=False, tcpdump=False, multipath=True)
+    setup_net(net, ip_tun=True, quic_tun=True, gdb=False, tcpdump=False, multipath=False)
 
     CLI(net)
     teardown_net(net)
