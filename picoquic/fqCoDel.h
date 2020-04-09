@@ -17,27 +17,13 @@
 #endif
 
 #ifndef NUM_FLOWS
-#define NUM_FLOWS 4
+#define NUM_FLOWS 32
 #endif
 
 #ifndef MAX_MTU
 #define MAX_MTU   1400
 #endif
 //Structures in this implementation will mimic the API available in pQUIC 
-
-//TODO: cange all queues to doubly linked lists
-
-//create minimal structure to classify flows based on 5-tuple + diffServ
-typedef struct st_ipheader{
-    uint8_t      protocol;
-    uint32_t     source_ip;
-    uint32_t     destination_ip;
-    uint16_t     source_port;
-    uint16_t     destination_port;
-    uint8_t      diffserv;
-    uint32_t     *hashkey;
-}ipheader_t;
-
 
 
 typedef struct st_codel_frame{
@@ -52,7 +38,7 @@ typedef struct st_fqcodel_flow{
     struct list_head    flow_chain;
     int32_t             credits;      //current number of queue credits         
     uint32_t            dropped;      //# of drops or ECN marks on flow
-    codel_vars_t        codel_vars;   
+    codel_vars_t        codel_vars; 
 }fqcodel_flow_t;
 
 
@@ -65,15 +51,13 @@ typedef struct st_fqcodel_schedule_data{
     uint32_t                quantum;
     codel_params_t          codel_params;
     codel_stats_t           codel_stats;
-    //uint32_t              memory_limit;
+    uint32_t                limit;
     //uint32_t              memory_usage;
     uint32_t                drop_overlimit;
     uint32_t                new_flow_count;
     struct list_head        new_flows;
     struct list_head        old_flows;
 }fqcodel_schedule_data_t;
-
-int parse_ipheader(ipheader_t *iphdr, uint8_t *ip_packet);
 
 
 fqcodel_schedule_data_t *fqcodel_init();
@@ -95,15 +79,5 @@ static inline void fqcodel_destroy(fqcodel_schedule_data_t *fqcodel)
     free(fqcodel->flows);
     free(fqcodel);
 }
-
-static inline void ipheader_destroy(ipheader_t *iphdr)
-{
-    if(iphdr->hashkey != NULL)
-    {
-        free(iphdr->hashkey);
-    }
-    free(iphdr);
-}
-
 
 #endif /* FQCODEL_H */

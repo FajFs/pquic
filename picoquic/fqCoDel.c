@@ -1,154 +1,149 @@
 #include "fqCoDel.h"
 
-
-//TODO: move to separate file, should not be here
-int parse_ipheader(ipheader_t *iphdr, uint8_t *ip_packet)
-{
-    //check if ip or icmp
-
-    //check if ipv4 or 6
-
-
-    //simple parse of ipv4 header
-    memcpy(&iphdr->diffserv, ip_packet               + 1, sizeof(uint8_t));
-    memcpy(&iphdr->protocol, ip_packet               + 9, sizeof(uint8_t));
-    memcpy(&iphdr->source_ip, ip_packet              + 12, sizeof(uint32_t));
-    memcpy(&iphdr->destination_ip, ip_packet         + 16, sizeof(uint32_t));
-    memcpy(&iphdr->source_port, ip_packet            + 20, sizeof(uint16_t));
-    memcpy(&iphdr->destination_port, ip_packet       + 22, sizeof(uint16_t));
-    //hacky solution but it works
-    iphdr->hashkey[0] =  (uint32_t) iphdr->protocol;
-    iphdr->hashkey[1] =             iphdr->source_ip;
-    iphdr->hashkey[2] =             iphdr->destination_ip;
-    iphdr->hashkey[3] =  (uint32_t) iphdr->source_port;
-    iphdr->hashkey[4] =  (uint32_t) iphdr->destination_port;
-
-    return 1;
-}
-
-
-
 //returns the index to the queue to which the dataflow belongs to
-// out: 0 - 2^10 -1 
 inline uint32_t fqcodel_hash(fqcodel_schedule_data_t *fqcodel, const void *hashKey, size_t len)
 {
-    //allows for mapping of 1024 concurrent flows, currently hashing on only is congestion controlled to test
-    uint32_t t = hashlittle(hashKey,  sizeof(uint8_t), 1) & hashmask(2);
-    //printf("the hash value = %u\n",t);
-    return t;
+    return hashlittle(hashKey,  sizeof(uint32_t), 1) & hashmask(2);
 }
 
-void fq_print_stats(fqcodel_schedule_data_t *fqcodel)
+//check if there are any flows alive
+struct list_head * peek_flow_queues(fqcodel_schedule_data_t *fqcodel)
 {
-    codel_frame_t *frame = (codel_frame_t *) queue_peek(fqcodel->flows[722].codel_queue);
-    printf("Enqueue Time: %lu\n", frame->enqueue_time);
-    printf("should equal 0x2e == %lx\n",frame->block->frames[0].frame_type);
-}
-
-
-
-
-
-//Enqueing
-int fqcodel_enqueue(fqcodel_schedule_data_t *fqcodel, reserve_frames_block_t  *block)
-{   
-    int ret;
-    //FIX ME!!!
-    uint32_t i = 1;
-    uint32_t *test = &i;
-    //start by classifying the data into a queue, the plugin specific data is the 5-touple
-    uint32_t idx = fqcodel_hash(fqcodel, test, IP_HEADER_PARAMS); //hacky but works since the datagram plugin only schedules 1 frame at a time
-
-    fqcodel_flow_t *flow = &fqcodel->flows[idx];
-
-    codel_frame_t *cf = malloc(sizeof(codel_frame_t));
-    if(cf == NULL)
-    {
-        printf("Memory allocation of codelFrame FAILED");
-        return 0;
-    }
-
-    cf->enqueue_time =  picoquic_current_time();
-    cf->block = block;
-    //update backlogs
-    fqcodel->backlogs[idx] += block->total_bytes;
-
-    ret = queue_enqueue(flow->codel_queue, cf);
-    if(ret != 0)
-    {
-        printf("Enqueing of data failed\n");
-        return ret;
-    }
-    //if the flow is empty append it to list of new flows
-    if(list_empty(&flow->flow_chain)){
-        list_add_tail(&flow->flow_chain, &fqcodel->new_flows);
-        //update number of new flows
-        fqcodel->new_flow_count++;
-        //update flow vars
-        flow->dropped = 0;
-        flow->credits = fqcodel->quantum;
-    }
-    // //append data to flow
-    // printf("\tHASH/QUEUE: %d\n",idx);
-    // printf("\tBACKLOG: %d\n",fqcodel->backlogs[idx]);
-    return ret;
-}
-
-//function very similar to fqcodel_dequeue, i am lazy, FIXME!!!
-reserve_frames_block_t *fqcodel_peek(fqcodel_schedule_data_t *fqcodel)
-{
-    // printf("PEEKING FOR FRAME IN FQCODEL\n");
-    codel_frame_t *frame;
-    fqcodel_flow_t *flow;
     struct list_head *head;
-
     head = &fqcodel->new_flows;
     if(list_empty(head))
     {
         head = &fqcodel->old_flows;
-        if(list_empty(head))
+        if(list_empty(head)) return NULL;
+    }
+    return head;
+}
+
+int fqcodel_drop(fqcodel_schedule_data_t *fqcodel)
+{   
+    fqcodel_flow_t *flow;
+    codel_frame_t *frame;
+    codel_frame_t *tmp_frame;
+    uint32_t max_backlog = 0;
+    uint32_t idx = 0;
+    for(int i = 0; i < NUM_FLOWS; i++)
+    {
+		if (fqcodel->backlogs[i] > max_backlog) 
         {
-            // printf("ALL QUEUES EMPTY\n");
-            return NULL;
+			max_backlog = fqcodel->backlogs[i];
+			idx = i;
+		}
+    }
+    flow = &fqcodel->flows[idx];
+    frame = queue_dequeue(flow->codel_queue);
+    max_backlog >>= 1;
+	while (queue_size(flow->codel_queue) > max_backlog)
+    {
+        tmp_frame = queue_dequeue(flow->codel_queue);
+        frame->block->total_bytes += tmp_frame->block->total_bytes;
+    } 
+    fqcodel->backlogs[idx] -= frame->block->total_bytes;
+    fqcodel->limit -= frame->block->total_bytes;
+    return frame->block->total_bytes;
+}
+
+//Enqueing into FQ_CoDel
+int fqcodel_enqueue(fqcodel_schedule_data_t *fqcodel, reserve_frames_block_t  *block)
+{   
+    //Classify data into the appropriate queue
+    uint32_t idx = fqcodel_hash(fqcodel,&block->frames->fq_key, IP_HEADER_PARAMS); 
+    fqcodel_flow_t *flow = &fqcodel->flows[idx];
+    codel_frame_t *codel_frame = malloc(sizeof(codel_frame_t));
+
+    if(codel_frame == NULL)  {return 1;}
+    //enqueue the codel frame into FQ
+    codel_frame->block = block;
+    //update backlogs
+
+    if(queue_enqueue(flow->codel_queue, codel_frame) == 1) {return 1;}
+    fqcodel->backlogs[idx] += block->total_bytes;
+    fqcodel->limit += block->total_bytes;
+    //Flow Queue management
+    //if the flow is empty append it to list of new flows and update the number of new flows
+    if(list_empty(&flow->flow_chain)){
+        list_add_tail(&flow->flow_chain, &fqcodel->new_flows);
+        fqcodel->new_flow_count++;
+        //update flow vars
+        //weflow->dropped = 0;
+        flow->credits = fqcodel->quantum;        
+    }
+    //check for fat flows
+    if(fqcodel->limit >= 10000000) block->frames->nb_frames_to_drop = fqcodel_drop(fqcodel);
+    return 0;
+}
+
+//Peek if there are any frames that can be scheduled
+reserve_frames_block_t *fqcodel_peek(fqcodel_schedule_data_t *fqcodel)
+{   
+    codel_frame_t *frame = NULL;
+    fqcodel_flow_t *flow;
+    struct list_head *head;
+
+    //While frame not found
+    while(!frame)
+    {
+        //Try peek for active queues in New and Old flow queue 
+        head = peek_flow_queues(fqcodel);
+        if(!head) return NULL;
+        //check if there are frames to be scheduled in the choosen flow
+        flow = list_first_entry(head, fqcodel_flow_t, flow_chain);
+        frame = queue_peek(flow->codel_queue);
+        if(!frame)
+        {
+            //if flow is new and there exists frames in the old flows --> move current flow to old flows to prevent starvation
+            if ((head == &fqcodel->new_flows) && !list_empty(&fqcodel->old_flows))
+                list_move_tail(&flow->flow_chain, &fqcodel->old_flows);
+            //if no frame no frames to be scheduled --> delete the flow
+            else
+                list_del_init(&flow->flow_chain);
         }
     }
-
-    flow = list_first_entry(head, fqcodel_flow_t, flow_chain);
-    if((frame = queue_peek(flow->codel_queue)) == NULL){
-        printf("The current queue is empty!\n");
-        return NULL;
-    }
-    // printf("FQCODEL HAS AT LEAST ONE DEQUABLE FRAME (PEEK)\n\t BYTES TO SEND: %lu\n", frame->block->total_bytes);
-
     return frame->block;   
 }
 
-reserve_frames_block_t *fqcodel_dequeue(fqcodel_schedule_data_t *fqcodel){
-    codel_frame_t *frame;
-    fqcodel_flow_t *flow;
-    struct list_head *head;
 
-    head = &fqcodel->new_flows;
-    if(list_empty(head))
+//Dequeue frames from FQ_CoDel
+reserve_frames_block_t *fqcodel_dequeue(fqcodel_schedule_data_t *fqcodel)
+{
+    struct list_head *head;
+    codel_frame_t *frame = NULL;
+    fqcodel_flow_t *flow;  
+
+    //while no frame is dequeued
+    while (!frame)
     {
-        head = &fqcodel->old_flows;
-        if(list_empty(head))
+        //Try peek for active queues in New and Old flow queue 
+        head = peek_flow_queues(fqcodel);
+        if(!head) return NULL;
+        //Get flow from the choosen queue
+        flow = list_first_entry(head, fqcodel_flow_t, flow_chain);
+        //Check if the flow has enough credits to send, else place last in old_flows
+        if (flow->credits <= 0) 
         {
-            // printf("ALL QUEUES IN FQCODEL CURRENTLY EMPTY\n");
-            return NULL;
+            flow->credits += fqcodel->quantum;
+            list_move_tail(&flow->flow_chain, &fqcodel->old_flows);
+            continue;
+        }        //Try dequeue frame from flow
+        frame = queue_dequeue(flow->codel_queue);
+        if(!frame)
+        {
+            //if flow is new and there exists frames in the old flows --> move current flow to old flows to prevent starvation
+            if ((head == &fqcodel->new_flows) && !list_empty(&fqcodel->old_flows))
+                list_move_tail(&flow->flow_chain, &fqcodel->old_flows);
+            //if no frame no frames to be scheduled --> delete the flow
+            else
+                list_del_init(&flow->flow_chain);
         }
     }
-
-    flow = list_first_entry(head, fqcodel_flow_t, flow_chain);
-
-    if(queue_peek(flow->codel_queue) == NULL){
-        printf("The current queue is empty\n!");
-        return NULL;
-    }
-
-    frame = queue_dequeue(flow->codel_queue);
-    //update backlog and other data
-    // printf("FQCODEL HAS DEQUEUED FRAME (DEQEUE)\n");
+    //Update the choosen flows credits
+    flow->credits -= frame->block->total_bytes;
+    fqcodel->limit -= frame->block->total_bytes;
+    fqcodel->backlogs[flow - fqcodel->flows]-= frame->block->total_bytes;
     return frame->block;
 }
 
@@ -159,20 +154,18 @@ fqcodel_schedule_data_t *fqcodel_init()
     fqcodel_schedule_data_t *fqcodel = malloc(sizeof(fqcodel_schedule_data_t));
     if(fqcodel == NULL)
     {
-        printf("Memory allocation of fq CoDel Schedule Data FAILED\n");
         return NULL;
     }
     //set limit of number of flows
     fqcodel->flows_count = NUM_FLOWS;
     //set the quantum bytes to the MTU = 1400 bytes
-    //TODO: cope with varying MTUs
-    fqcodel->quantum = 1400;
+    fqcodel->quantum = MAX_MTU;
     fqcodel->perturbation = 1; //TODO: use a random number instead
-
+    fqcodel->new_flow_count=0;
+    fqcodel->limit = 0;
     //init list for new and old flows
     INIT_LIST_HEAD(&fqcodel->new_flows);
     INIT_LIST_HEAD(&fqcodel->old_flows);
-
 
     //initiate the CoDel params and stats according to the linux implementation
     //init_codel_params(&fqcodel->codel_params);
@@ -184,20 +177,19 @@ fqcodel_schedule_data_t *fqcodel_init()
     fqcodel->flows = malloc( fqcodel->flows_count * sizeof(fqcodel_flow_t));
     if(fqcodel == NULL)
     {
-        printf("Memory allocation of flows FAILED");
+        //printf("Memory allocation of flows FAILED");
         return NULL;
     }
     fqcodel->backlogs = malloc(fqcodel->flows_count * sizeof(uint32_t));
     if(fqcodel->backlogs == NULL)
     {
-        printf("Memory alloacation for backlogs FAILED");
+        //printf("Memory alloacation for backlogs FAILED");
     }
     for(int i = 0; i < fqcodel->flows_count; i++)
     {
         fqcodel_flow_t *f = fqcodel->flows + i;
         f->codel_queue = queue_init();
-        INIT_LIST_HEAD(&f->flow_chain);       
-        //init_codel_vars(&f->codel_vars);
+        INIT_LIST_HEAD(&f->flow_chain);        //init_codel_vars(&f->codel_vars);
     }
     return fqcodel;
 }
