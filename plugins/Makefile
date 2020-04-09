@@ -1,4 +1,4 @@
-SUBDIRS := basic monitoring datagram fec multipath qlog no_pacing
+SUBDIRS :=   datagram  multipath  
 
 all: $(SUBDIRS)
 $(SUBDIRS):
