@@ -241,6 +241,8 @@ typedef struct reserve_frame_slot {
     protoop_plugin_t *p; /* Whathever you place here, it will be overwritten */
     /* TODO FIXME position */
     void *frame_ctx;
+    uint32_t fq_key;
+    uint32_t nb_frames_to_drop;
 } reserve_frame_slot_t;
 
 typedef struct reserve_frames_block {
