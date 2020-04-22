@@ -619,6 +619,7 @@ int quic_server(const char* server_name, int server_port,
                 uint64_t loop_time = picoquic_current_time();
 
                 while ((sp = picoquic_dequeue_stateless_packet(qserver)) != NULL) {
+                    picoquic_log_congestion_state(F_log, cnx_server, picoquic_current_time());
                     (void) picoquic_send_through_server_sockets(&server_sockets,
                         (struct sockaddr*)&sp->addr_to,
                         (sp->addr_to.ss_family == AF_INET) ? sizeof(struct sockaddr_in) : sizeof(struct sockaddr_in6),
@@ -685,7 +686,7 @@ int quic_server(const char* server_name, int server_port,
                             int socket_index = 0;
 #endif
                             picoquic_before_sending_packet(cnx_next, server_sockets.s_socket[socket_index]);
-
+                            picoquic_log_congestion_state(F_log, cnx_server, picoquic_current_time());
                             (void)picoquic_send_through_server_sockets(&server_sockets,
                                 peer_addr, peer_addr_len, local_addr, local_addr_len,
                                 picoquic_get_local_if_index(path),

@@ -59,7 +59,7 @@ protoop_arg_t send_datagram_frame(picoquic_cnx_t* cnx)
     slot->is_fqcompatible = FQ;
     if(FQ)  slot->fq_key = parse_ip_packet(payload, cnx);
     //Ready to classify data into fq_codel
-    PROTOOP_PRINTF(cnx, "PROTOCOL %d\n",slot->fq_key);
+    //PROTOOP_PRINTF(cnx, "PROTOCOL %d\n",slot->fq_key);
 
     size_t reserved_size = reserve_frames(cnx, 1, slot);
     if (reserved_size < slot->nb_bytes) {
@@ -76,7 +76,7 @@ protoop_arg_t send_datagram_frame(picoquic_cnx_t* cnx)
         PROTOOP_PRINTF(cnx, "DROPPING %d BYTES\n", slot->nb_frames_to_drop);
     }
     m->send_buffer += frame->length;
-    PROTOOP_PRINTF(cnx, "Memes %d\n", m->send_buffer);
+    PROTOOP_PRINTF(cnx, "Send Buffer %d\n", m->send_buffer);
 
     return 0;
 }

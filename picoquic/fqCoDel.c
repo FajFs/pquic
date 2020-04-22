@@ -1,5 +1,30 @@
 #include "fqCoDel.h"
 
+//value common bdp --> 50 mbit/s * 26 ms
+#define STATIC_BDP 162500
+//#define QUEUE_SIZE 375000
+#define QUEUE_SIZE 125000*2
+
+void printQueueStats(fqcodel_schedule_data_t *f)
+{
+    uint64_t t = picoquic_current_time();
+    printf("\n Active Flows: %d\n",f->new_flow_count);
+    printf("TIME: %6ld\n",t);
+    printf("\nBUFFER: %d %lu\n", f->limit, t);
+
+    printf("DROPPED: %6d %lu\n", f->drop_overlimit, t);
+    for(int i = 0; i < NUM_FLOWS; i++)
+    {   
+        //  printf("\tQ: %2u BACKLOG %6d\n",
+        //         i, f->backlogs[i]);
+        printf("\tQ: %2u BACKLOG %6d SIZE %6lu CREDITS %6d %lu\n",
+                i, f->backlogs[i], queue_size(f->flows[i].codel_queue), f->flows[i].credits, t);
+    }
+}
+
+
+
+
 //returns the index to the queue to which the dataflow belongs to
 inline uint32_t fqcodel_hash(fqcodel_schedule_data_t *fqcodel, const void *hashKey, size_t len)
 {
@@ -26,6 +51,7 @@ int fqcodel_drop(fqcodel_schedule_data_t *fqcodel)
     codel_frame_t *tmp_frame;
     uint32_t max_backlog = 0;
     uint32_t idx = 0;
+    uint32_t limit = 0;
     for(int i = 0; i < NUM_FLOWS; i++)
     {
 		if (fqcodel->backlogs[i] > max_backlog) 
@@ -34,16 +60,24 @@ int fqcodel_drop(fqcodel_schedule_data_t *fqcodel)
 			idx = i;
 		}
     }
-    flow = &fqcodel->flows[idx];
+    flow = &fqcodel->flows[idx];   
+    limit = QUEUE_SIZE/fqcodel->new_flow_count;
+    
     frame = queue_dequeue(flow->codel_queue);
-    max_backlog >>= 1;
-	while (queue_size(flow->codel_queue) > max_backlog)
+    max_backlog -= frame->block->total_bytes;
+    fqcodel->drop_overlimit++;
+	while (max_backlog > limit)
     {
         tmp_frame = queue_dequeue(flow->codel_queue);
         frame->block->total_bytes += tmp_frame->block->total_bytes;
-    } 
+        max_backlog -= tmp_frame->block->total_bytes;
+        fqcodel->drop_overlimit++;
+
+    }
+     
     fqcodel->backlogs[idx] -= frame->block->total_bytes;
     fqcodel->limit -= frame->block->total_bytes;
+    printQueueStats(fqcodel);
     return frame->block->total_bytes;
 }
 
@@ -51,7 +85,7 @@ int fqcodel_drop(fqcodel_schedule_data_t *fqcodel)
 int fqcodel_enqueue(fqcodel_schedule_data_t *fqcodel, reserve_frames_block_t  *block)
 {   
     //Classify data into the appropriate queue
-    uint32_t idx = fqcodel_hash(fqcodel,&block->frames->fq_key, IP_HEADER_PARAMS); 
+    uint32_t idx = fqcodel_hash(fqcodel,&block->frames->fq_key, IP_HEADER_PARAMS);
     fqcodel_flow_t *flow = &fqcodel->flows[idx];
     codel_frame_t *codel_frame = malloc(sizeof(codel_frame_t));
 
@@ -73,36 +107,32 @@ int fqcodel_enqueue(fqcodel_schedule_data_t *fqcodel, reserve_frames_block_t  *b
         flow->credits = fqcodel->quantum;        
     }
     //check for fat flows
-    if(fqcodel->limit >= 10000000) block->frames->nb_frames_to_drop = fqcodel_drop(fqcodel);
-    return 0;
+    //if(fqcodel->limit >= QUEUE_SIZE) block->frames->nb_frames_to_drop = fqcodel_drop(fqcodel);
+
+    if(fqcodel->backlogs[idx] >= QUEUE_SIZE/fqcodel->new_flow_count) block->frames->nb_frames_to_drop = fqcodel_drop(fqcodel);
+    printQueueStats(fqcodel);
+    return 0;                    
 }
 
 //Peek if there are any frames that can be scheduled
 reserve_frames_block_t *fqcodel_peek(fqcodel_schedule_data_t *fqcodel)
 {   
     codel_frame_t *frame = NULL;
-    fqcodel_flow_t *flow;
-    struct list_head *head;
-
-    //While frame not found
-    while(!frame)
+    fqcodel_flow_t *flow = NULL;
+    struct list_head *head = NULL;
+    head = peek_flow_queues(fqcodel);
+    if(!head){
+        //printf("HEAD NULL\n"); 
+        return NULL;
+    } 
+    //check if there are frames to be scheduled in the choosen flow 
+    flow = list_first_entry(head, fqcodel_flow_t, flow_chain);
+    frame = queue_peek(flow->codel_queue);
+    if(!frame)
     {
-        //Try peek for active queues in New and Old flow queue 
-        head = peek_flow_queues(fqcodel);
-        if(!head) return NULL;
-        //check if there are frames to be scheduled in the choosen flow
-        flow = list_first_entry(head, fqcodel_flow_t, flow_chain);
-        frame = queue_peek(flow->codel_queue);
-        if(!frame)
-        {
-            //if flow is new and there exists frames in the old flows --> move current flow to old flows to prevent starvation
-            if ((head == &fqcodel->new_flows) && !list_empty(&fqcodel->old_flows))
-                list_move_tail(&flow->flow_chain, &fqcodel->old_flows);
-            //if no frame no frames to be scheduled --> delete the flow
-            else
-                list_del_init(&flow->flow_chain);
-        }
-    }
+        list_move_tail(&flow->flow_chain, &fqcodel->old_flows);
+        return NULL;
+    }    
     return frame->block;   
 }
 
@@ -110,6 +140,7 @@ reserve_frames_block_t *fqcodel_peek(fqcodel_schedule_data_t *fqcodel)
 //Dequeue frames from FQ_CoDel
 reserve_frames_block_t *fqcodel_dequeue(fqcodel_schedule_data_t *fqcodel)
 {
+    //printQueueStats(fqcodel);
     struct list_head *head;
     codel_frame_t *frame = NULL;
     fqcodel_flow_t *flow;  
@@ -128,8 +159,10 @@ reserve_frames_block_t *fqcodel_dequeue(fqcodel_schedule_data_t *fqcodel)
             flow->credits += fqcodel->quantum;
             list_move_tail(&flow->flow_chain, &fqcodel->old_flows);
             continue;
-        }        //Try dequeue frame from flow
+        }
+        //if the flow has data to send move it last in new flows to keep fair
         frame = queue_dequeue(flow->codel_queue);
+       //if flow is new and there exists frames in the old flows --> move current flow to old flows to prevent starvation
         if(!frame)
         {
             //if flow is new and there exists frames in the old flows --> move current flow to old flows to prevent starvation
@@ -137,13 +170,18 @@ reserve_frames_block_t *fqcodel_dequeue(fqcodel_schedule_data_t *fqcodel)
                 list_move_tail(&flow->flow_chain, &fqcodel->old_flows);
             //if no frame no frames to be scheduled --> delete the flow
             else
+            {
                 list_del_init(&flow->flow_chain);
-        }
+                --fqcodel->new_flow_count;
+            }
+        }        
     }
     //Update the choosen flows credits
     flow->credits -= frame->block->total_bytes;
     fqcodel->limit -= frame->block->total_bytes;
-    fqcodel->backlogs[flow - fqcodel->flows]-= frame->block->total_bytes;
+
+    fqcodel->backlogs[flow - fqcodel->flows] -= frame->block->total_bytes;
+    printQueueStats(fqcodel);
     return frame->block;
 }
 
@@ -163,6 +201,7 @@ fqcodel_schedule_data_t *fqcodel_init()
     fqcodel->perturbation = 1; //TODO: use a random number instead
     fqcodel->new_flow_count=0;
     fqcodel->limit = 0;
+    fqcodel->drop_overlimit = 0;
     //init list for new and old flows
     INIT_LIST_HEAD(&fqcodel->new_flows);
     INIT_LIST_HEAD(&fqcodel->old_flows);
@@ -189,6 +228,8 @@ fqcodel_schedule_data_t *fqcodel_init()
     {
         fqcodel_flow_t *f = fqcodel->flows + i;
         f->codel_queue = queue_init();
+        fqcodel->backlogs[i] = 0;
+        fqcodel->flows[i].credits = 0;
         INIT_LIST_HEAD(&f->flow_chain);        //init_codel_vars(&f->codel_vars);
     }
     return fqcodel;

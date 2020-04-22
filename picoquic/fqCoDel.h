@@ -17,11 +17,11 @@
 #endif
 
 #ifndef NUM_FLOWS
-#define NUM_FLOWS 32
+#define NUM_FLOWS 8
 #endif
 
 #ifndef MAX_MTU
-#define MAX_MTU   1400
+#define MAX_MTU   1403
 #endif
 //Structures in this implementation will mimic the API available in pQUIC 
 

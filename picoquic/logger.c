@@ -1852,10 +1852,11 @@ void picoquic_log_transport_extension(FILE* F, picoquic_cnx_t* cnx, int log_cnxi
 void picoquic_log_congestion_state(FILE* F, picoquic_cnx_t* cnx,
 uint64_t current_time)
 {
+    uint64_t time = picoquic_current_time();
      for (int i = 0; i < cnx->nb_paths; i++) {
          picoquic_path_t *p = cnx->path[i];
-         printf("path: %p,", p);
-         printf("cwin: %d,", (int) p->cwin);
+         //printf("path: %p,", p);
+         printf("cwin %d %ld\n", (int) p->cwin, time);
          printf("flight: %d,", (int) p->bytes_in_transit);
          printf("nb_ret: %d,", (int) cnx->nb_retransmission_total);
          printf("rtt_min: %d,", (int) p->rtt_min);

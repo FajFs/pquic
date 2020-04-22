@@ -7,7 +7,7 @@
 #include <stdbool.h>
 
 #ifndef MAX_MTU
-#define MAX_MTU 1400
+#define MAX_MTU 1403
 #endif
 
 //structures to maintain Codel queues

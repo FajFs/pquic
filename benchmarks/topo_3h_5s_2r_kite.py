@@ -63,8 +63,8 @@ class KiteTopo(Topo):
         if 'bw' in opts:
             opts['bw_a'] = opts['bw']
             opts['bw_b'] = opts['bw']
-
-        generic_opts = {'delay': '0ms', 'max_queue_size': 3 * 174}
+        #3 * 174
+        generic_opts = {'delay': '5ms', 'max_queue_size': 3 * 174}
         self.r1 = self.addNode('r1', cls=LinuxRouter)
         self.r2 = self.addNode('r2', cls=LinuxRouter)
         self.r3 = self.addNode('r3', cls=LinuxRouter)
@@ -80,6 +80,7 @@ class KiteTopo(Topo):
         self.addLink(self.s3, self.r1, intfName2='r1-eth2', **generic_opts)
         if 'bw_a' in opts and 'delay_ms_a' in opts:
             mqs = int(1.5 * (((opts['bw_a'] * 1000000) / 8) / 1500) * (2 * 70 / 1000.0))  # 1.5 * BDP, TODO: This assumes that packet size is 1500 bytes
+            print("MSQ :" , mqs)
             self.addLink(self.s2, self.r2, bw=opts['bw_a'], delay='%dms' % opts['delay_ms_a'], loss=opts.get('loss_a', 0), max_queue_size=mqs, intfName2='r2-eth0')
         else:
             self.addLink(self.s2, self.r2, intfName2='r1-eth0')
@@ -238,7 +239,7 @@ def setup_net(net, ip_tun=True, quic_tun=True, gdb=False, tcpdump=False, multipa
         net['vpn'].cmd('tcpdump -i vpn-eth0 -w vpn.pcap &')
         sleep(1)
 
-    plugins = "-P plugins/datagram/datagram.plugin"
+    plugins = " -P plugins/datagram/datagram.plugin"
     if multipath:
         plugins += " -P plugins/multipath/multipath_rr.plugin"
 
@@ -261,7 +262,7 @@ def setup_net(net, ip_tun=True, quic_tun=True, gdb=False, tcpdump=False, multipa
         else:
             net['cl'].cmd('./picoquicvpn {} 10.2.2.2 4443 2>&1 > log_client.log &'.format(plugins))
 
-    #net['web'].cmd(web_cmd)
+    net['web'].cmd(web_cmd)
     net['web'].cmd('netserver')
     sleep(1)
 
@@ -282,7 +283,7 @@ def teardown_net(net):
 
 def run():
     net_cleanup()
-    net = Mininet(KiteTopo(bw_a=60, bw_b=60, delay_ms_a=10, delay_ms_b=10, loss_a=0, loss_b=0), link=TCLink, autoStaticArp=True, switch=OVSBridge, controller=None)
+    net = Mininet(KiteTopo(bw_a=100, bw_b=100, delay_ms_a=10, delay_ms_b=10, loss_a=0, loss_b=0), link=TCLink, autoStaticArp=True, switch=OVSBridge, controller=None)
     net.start()
     setup_net(net, ip_tun=True, quic_tun=True, gdb=False, tcpdump=False, multipath=False)
 

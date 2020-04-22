@@ -60,16 +60,16 @@ class LinuxRouter(Node):
 
 class KiteTopo(Topo):
     def build(self, **opts):
-        wifi_opt = {'delay': str(opts['delay_ms_a']) + "ms", 'loss': opts['loss_a'], 'bw': opts['bw_a']}
-        lte_opt = {'delay': str(opts['delay_ms_b']) + "ms", 'loss': opts['loss_b'], 'bw': opts['bw_b']}
-
+        wifi_opt = {'delay': str(opts['delay_ms_a']) + "ms", 'loss': opts['loss_a'], 'bw': opts['bw_a'], 'max_queue_size': 10000}
+        lte_opt = {'delay': str(opts['delay_ms_b']) + "ms", 'loss': opts['loss_b'], 'bw': opts['bw_b'], 'max_queue_size': 10000}
+        generic_opts = {'delay': '10ms', 'max_queue_size': 1000, 'bw': 50 }
         self.r1 = self.addNode('r1', cls=LinuxRouter)
         self.cl = self.addHost('cl')
         self.vpn = self.addHost('vpn')
 
         self.addLink(self.cl, self.r1, intfName1='cl-eth0', intfName2='r1-eth0', **wifi_opt)
         self.addLink(self.cl, self.r1, intfName1='cl-eth1', intfName2='r1-eth1', **lte_opt)
-        self.addLink(self.r1, self.vpn, intfName1='r1-eth2', intfName2='vpn-eth0')
+        self.addLink(self.r1, self.vpn, intfName1='r1-eth2', intfName2='vpn-eth0', **generic_opts)
 
 
 
@@ -181,8 +181,8 @@ def setup_net(net, ip_tun=True, quic_tun=True, gdb=False, tcpdump=False, multipa
         if gdb:
             net['vpn'].cmd('xterm -e gdb -ex run -ex bt --args picoquicvpn {} -p 4443 2>&1 > log_server.log &'.format(plugins))
         else:
-            #net['vpn'].cmd('./picoquicvpn {} -p 4443 2>&1 > log_server.log &'.format(plugins))
-            net['vpn'].cmd('./picoquicdemo -P plugins/datagram/datagram.plugin -P plugins/multipath/multipath_rr.plugin -p 4443 2>&1 > log_server.log &')
+            net['vpn'].cmd('./picoquicvpn {} -p 4443 2>&1 > log_server.log &'.format(plugins))
+            #net['vpn'].cmd('./picoquicdemo -P plugins/datagram/datagram.plugin  -p 4443 2>&1 > log_server.log &')
         sleep(1)
 
     if tcpdump:
@@ -194,9 +194,10 @@ def setup_net(net, ip_tun=True, quic_tun=True, gdb=False, tcpdump=False, multipa
         if gdb:
             net['cl'].cmd('xterm -e gdb -ex run -ex bt --args picoquicvpn {} 10.0.3.1 4443 2>&1 > log_client.log &'.format(plugins))
         else:
-            #net['cl'].cmd('./picoquicvpn {} 10.0.3.1 4443 2>&1 > log_client.log &'.format(plugins))
-            net['cl'].cmd('./picoquicdemo -P plugins/datagram/datagram.plugin -P plugins/multipath/multipath_rr.plugin 10.0.3.1 4443 2>&1 > log_client.log &'.format(plugins))
+            net['cl'].cmd('./picoquicvpn {} 10.0.3.1 4443 2>&1 > log_client.log &'.format(plugins))
+            #net['cl'].cmd('./picoquicdemo -P plugins/datagram/datagram.plugin  10.0.3.1 4443 2>&1 > log_client.log &'.format(plugins))
     sleep(1)
+    net['vpn'].cmd('netserver')
 
 
 def teardown_net(net):
@@ -213,7 +214,7 @@ def teardown_net(net):
 
 def run():
     net_cleanup()
-    net = Mininet(KiteTopo(bw_a=500, bw_b=500, delay_ms_a=5, delay_ms_b=5, loss_a=0, loss_b=0), link=TCLink, autoStaticArp=True, switch=OVSBridge, controller=None)
+    net = Mininet(KiteTopo(bw_a=1000, bw_b=1000, delay_ms_a=0, delay_ms_b=0, loss_a=1, loss_b=1), link=TCLink, autoStaticArp=True, switch=OVSBridge, controller=None)
     net.start()
     setup_net(net, ip_tun=True, quic_tun=True, gdb=False, tcpdump=False, multipath=False)
 

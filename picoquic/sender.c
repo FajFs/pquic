@@ -2802,7 +2802,12 @@ size_t picoquic_frame_fair_reserve(picoquic_cnx_t *cnx, picoquic_path_t *path_x,
         num_plugins += 1;
     }
 
-    uint64_t max_plugin_cwin = path_x->cwin * (1000 - cnx->core_rate) / 1000;
+    //uint64_t max_plugin_cwin = path_x->cwin * (1000 - cnx->core_rate) / 1000;
+    // printf("smothed RTT: %lu\n", path_x->smoothed_rtt);
+    // printf("bit: %lu\n",path_x->bytes_in_transit);
+    // printf("path->cwin %lu\n", path_x->cwin);
+    uint64_t max_plugin_cwin = path_x->cwin;
+                     
     uint64_t total_plugin_bytes_in_flight = 0;
 
     /*
@@ -2819,17 +2824,17 @@ size_t picoquic_frame_fair_reserve(picoquic_cnx_t *cnx, picoquic_path_t *path_x,
     p = cnx->first_drr;
     /* First pass: consider only plugins with data in fqcodel */
     do {
-
-        if (p->params.rate_unlimited || total_plugin_bytes_in_flight < max_plugin_cwin){
+        if (path_x->bytes_in_transit < max_plugin_cwin){
+        // if (p->params.rate_unlimited || total_plugin_bytes_in_flight < max_plugin_cwin){
             while ((block = fqcodel_peek(p->fqcodel_block_queue)) != NULL &&
                    queued_bytes + block->total_bytes < frame_mss &&
                    !(stream != NULL && (!p->params.rate_unlimited && plugin_use >= max_plugin_cwin)) &&
                    (!block->is_congestion_controlled || path_x->bytes_in_transit < path_x->cwin))
             {
-                            printf("FRAME SCHEDULING\n\tCONSIDERING FQCODEL \n");
+                //            printf("FRAME SCHEDULING\n\tCONSIDERING FQCODEL \n");
                 should_wake_now |= !block->low_priority;    // we should wake now as soon as there is a high priority block
                 block = (reserve_frames_block_t *)fqcodel_dequeue(p->fqcodel_block_queue);               
-                if(block == NULL) continue;
+                //if(block == NULL) continue;
                 for (int i = 0; i < block->nb_frames; i++) {
                     /* Not the most efficient way, but will do the trick */
                     block->frames[i].p = p;
@@ -2848,7 +2853,7 @@ size_t picoquic_frame_fair_reserve(picoquic_cnx_t *cnx, picoquic_path_t *path_x,
                 /* Free the block */
                 free(block);
             }
-        }
+        }        
         total_plugin_bytes_in_flight += p->bytes_in_flight;
     } while ((p = get_next_plugin(cnx, p)) != cnx->first_drr);
 
@@ -2863,7 +2868,7 @@ size_t picoquic_frame_fair_reserve(picoquic_cnx_t *cnx, picoquic_path_t *path_x,
                    !(stream != NULL && (!p->params.rate_unlimited && plugin_use >= max_plugin_cwin)) &&
                    (!block->is_congestion_controlled || path_x->bytes_in_transit < path_x->cwin))
             {
-                should_wake_now |= !block->low_priority;    // we should wake now as soon as there is a high priority block                
+                //should_wake_now |= !block->low_priority;    // we should wake now as soon as there is a high priority block                
                 block = queue_dequeue(p->block_queue_cc);
                 for (int i = 0; i < block->nb_frames; i++) {
                     /* Not the most efficient way, but will do the trick */
