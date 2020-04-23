@@ -1,0 +1,7 @@
+datagram.plugin include
+parse_frame param 0x43 replace rtt/parse_timestamp_frame.o
+process_frame param 0x43 replace rtt/process_timestamp_frame.o
+notify_frame param 0x43 replace rtt/notify_timestamp_frame.o
+write_frame param 0x43 replace rtt/write_timestamp_frame.o
+timestamp_reserved replace rtt/timestamp_reserved.o
+#schedule_frames_on_path post rtt/add_timestamp_frame.o
