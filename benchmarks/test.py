@@ -214,7 +214,7 @@ def teardown_net(net):
 
 def run():
     net_cleanup()
-    net = Mininet(KiteTopo(bw_a=1000, bw_b=1000, delay_ms_a=0, delay_ms_b=0, loss_a=1, loss_b=1), link=TCLink, autoStaticArp=True, switch=OVSBridge, controller=None)
+    net = Mininet(KiteTopo(bw_a=1000, bw_b=1000, delay_ms_a=0, delay_ms_b=0, loss_a=0, loss_b=0), link=TCLink, autoStaticArp=True, switch=OVSBridge, controller=None)
     net.start()
     setup_net(net, ip_tun=True, quic_tun=True, gdb=False, tcpdump=False, multipath=False)
 
