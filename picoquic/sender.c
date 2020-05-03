@@ -1760,7 +1760,7 @@ protoop_arg_t has_congestion_controlled_plugin_frames_to_send(picoquic_cnx_t *cn
 
     if(p) {
         do {
-            if (queue_peek(p->block_queue_cc) || fqcodel_peek(p->fqcodel_block_queue)) {
+            if (queue_peek(p->block_queue_cc) || fqcodel_peek(cnx, p->fqcodel_block_queue)) {
                 ret = 1;
                 break;
             }
@@ -2778,6 +2778,12 @@ picoquic_path_t *picoquic_select_sending_path(picoquic_cnx_t *cnx, picoquic_pack
         retransmit_p, from_path, reason);
 }
 
+protoop_arg_t update_frames_dropped(picoquic_cnx_t *cnx)
+{
+    printf("DOING NOTHING ON PURPOSE\n");
+    return 0;
+}
+
 /* This implements a deficit round robin with bursts */
 size_t picoquic_frame_fair_reserve(picoquic_cnx_t *cnx, picoquic_path_t *path_x, picoquic_stream_head* stream, uint64_t frame_mss)
 {
@@ -2806,7 +2812,7 @@ size_t picoquic_frame_fair_reserve(picoquic_cnx_t *cnx, picoquic_path_t *path_x,
     // printf("smothed RTT: %lu\n", path_x->smoothed_rtt);
     // printf("bit: %lu\n",path_x->bytes_in_transit);
     // printf("path->cwin %lu\n", path_x->cwin);
-    uint64_t max_plugin_cwin = path_x->cwin;
+    uint64_t max_plugin_cwin = 75000;
                      
     uint64_t total_plugin_bytes_in_flight = 0;
 
@@ -2826,15 +2832,21 @@ size_t picoquic_frame_fair_reserve(picoquic_cnx_t *cnx, picoquic_path_t *path_x,
     do {
         if (path_x->bytes_in_transit < max_plugin_cwin){
         // if (p->params.rate_unlimited || total_plugin_bytes_in_flight < max_plugin_cwin){
-            while ((block = fqcodel_peek(p->fqcodel_block_queue)) != NULL &&
+            while ((block = fqcodel_peek(cnx, p->fqcodel_block_queue)) != NULL &&
                    queued_bytes + block->total_bytes < frame_mss &&
                    !(stream != NULL && (!p->params.rate_unlimited && plugin_use >= max_plugin_cwin)) &&
                    (!block->is_congestion_controlled || path_x->bytes_in_transit < path_x->cwin))
             {
                 //            printf("FRAME SCHEDULING\n\tCONSIDERING FQCODEL \n");
                 should_wake_now |= !block->low_priority;    // we should wake now as soon as there is a high priority block
-                block = (reserve_frames_block_t *)fqcodel_dequeue(p->fqcodel_block_queue);               
+                block = (reserve_frames_block_t *)fqcodel_dequeue(cnx, p->fqcodel_block_queue);               
                 //if(block == NULL) continue;
+                
+                // protoop_id_t pid;
+                // pid.id = "update_frames_dropped";
+                // pid.hash = hash_value_str(pid.id);
+                // protoop_prepare_and_run_noparam(cnx, &pid, NULL, block->frames[0].nb_bytes);
+
                 for (int i = 0; i < block->nb_frames; i++) {
                     /* Not the most efficient way, but will do the trick */
                     block->frames[i].p = p;
@@ -3581,6 +3593,7 @@ int picoquic_close(picoquic_cnx_t* cnx, uint16_t reason_code)
 
 void sender_register_noparam_protoops(picoquic_cnx_t *cnx)
 {
+    register_noparam_protoop(cnx, &PROTOOP_NOPARAM_UPDATE_FRAMES_DROPPED, &update_frames_dropped);
     register_noparam_protoop(cnx, &PROTOOP_NOPARAM_GET_DESTINATION_CONNECTION_ID, &get_destination_connection_id);
 
     register_noparam_protoop(cnx, &PROTOOP_NOPARAM_SET_NEXT_WAKE_TIME, &set_next_wake_time);

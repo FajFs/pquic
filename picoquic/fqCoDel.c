@@ -1,11 +1,13 @@
 #include "fqCoDel.h"
-
+#include "plugin.h"
+#include "memory.h"
+#include "picoquic_internal.h"
 //value common bdp --> 50 mbit/s * 26 ms
 #define STATIC_BDP 162500
 //#define QUEUE_SIZE 375000
-#define QUEUE_SIZE 125000*2
+#define QUEUE_SIZE 75000
 
-void printQueueStats(fqcodel_schedule_data_t *f)
+void printQueueStats(picoquic_cnx_t *cnx, fqcodel_schedule_data_t *f)
 {
     uint64_t t = picoquic_current_time();
     printf("\n Active Flows: %d\n",f->new_flow_count);
@@ -32,7 +34,7 @@ inline uint32_t fqcodel_hash(fqcodel_schedule_data_t *fqcodel, const void *hashK
 }
 
 //check if there are any flows alive
-struct list_head * peek_flow_queues(fqcodel_schedule_data_t *fqcodel)
+struct list_head * peek_flow_queues(picoquic_cnx_t *cnx, fqcodel_schedule_data_t *fqcodel)
 {
     struct list_head *head;
     head = &fqcodel->new_flows;
@@ -44,14 +46,12 @@ struct list_head * peek_flow_queues(fqcodel_schedule_data_t *fqcodel)
     return head;
 }
 
-int fqcodel_drop(fqcodel_schedule_data_t *fqcodel)
+void fqcodel_drop(picoquic_cnx_t *cnx, fqcodel_schedule_data_t *fqcodel)
 {   
     fqcodel_flow_t *flow;
     codel_frame_t *frame;
-    codel_frame_t *tmp_frame;
     uint32_t max_backlog = 0;
     uint32_t idx = 0;
-    uint32_t limit = 0;
     for(int i = 0; i < NUM_FLOWS; i++)
     {
 		if (fqcodel->backlogs[i] > max_backlog) 
@@ -61,28 +61,36 @@ int fqcodel_drop(fqcodel_schedule_data_t *fqcodel)
 		}
     }
     flow = &fqcodel->flows[idx];   
-    limit = QUEUE_SIZE/fqcodel->new_flow_count;
     
     frame = queue_dequeue(flow->codel_queue);
-    max_backlog -= frame->block->total_bytes;
-    fqcodel->drop_overlimit++;
-	while (max_backlog > limit)
-    {
-        tmp_frame = queue_dequeue(flow->codel_queue);
-        frame->block->total_bytes += tmp_frame->block->total_bytes;
-        max_backlog -= tmp_frame->block->total_bytes;
-        fqcodel->drop_overlimit++;
+    uint32_t allowed_buffered_bytes = QUEUE_SIZE/fqcodel->new_flow_count;
+    uint32_t bytes_dropped = frame->block->total_bytes;
+    uint32_t frames_dropped = 1;
 
+    max_backlog -= bytes_dropped;
+	while (max_backlog > allowed_buffered_bytes)
+    {
+        frame = queue_dequeue(flow->codel_queue);
+        bytes_dropped += frame->block->total_bytes;
+        max_backlog -= bytes_dropped;
+        frames_dropped++;
     }
-     
-    fqcodel->backlogs[idx] -= frame->block->total_bytes;
-    fqcodel->limit -= frame->block->total_bytes;
-    printQueueStats(fqcodel);
-    return frame->block->total_bytes;
+
+
+    fqcodel->drop_overlimit += frames_dropped;
+    fqcodel->backlogs[idx] -= bytes_dropped;
+    fqcodel->limit -= bytes_dropped;
+    printQueueStats(cnx, fqcodel);
+
+    protoop_id_t pid;
+    pid.id = "update_frames_dropped";
+    pid.hash = hash_value_str(pid.id);
+    protoop_prepare_and_run_noparam(cnx, &pid, NULL, bytes_dropped, frames_dropped);
+    return;
 }
 
 //Enqueing into FQ_CoDel
-int fqcodel_enqueue(fqcodel_schedule_data_t *fqcodel, reserve_frames_block_t  *block)
+int fqcodel_enqueue(picoquic_cnx_t *cnx, fqcodel_schedule_data_t *fqcodel, reserve_frames_block_t  *block)
 {   
     //Classify data into the appropriate queue
     uint32_t idx = fqcodel_hash(fqcodel,&block->frames->fq_key, IP_HEADER_PARAMS);
@@ -109,18 +117,18 @@ int fqcodel_enqueue(fqcodel_schedule_data_t *fqcodel, reserve_frames_block_t  *b
     //check for fat flows
     //if(fqcodel->limit >= QUEUE_SIZE) block->frames->nb_frames_to_drop = fqcodel_drop(fqcodel);
 
-    if(fqcodel->backlogs[idx] >= QUEUE_SIZE/fqcodel->new_flow_count) block->frames->nb_frames_to_drop = fqcodel_drop(fqcodel);
-    printQueueStats(fqcodel);
+    if(fqcodel->backlogs[idx] >= QUEUE_SIZE/fqcodel->new_flow_count)fqcodel_drop(cnx, fqcodel);
+    printQueueStats(cnx, fqcodel);
     return 0;                    
 }
 
 //Peek if there are any frames that can be scheduled
-reserve_frames_block_t *fqcodel_peek(fqcodel_schedule_data_t *fqcodel)
+reserve_frames_block_t *fqcodel_peek(picoquic_cnx_t *cnx, fqcodel_schedule_data_t *fqcodel)
 {   
     codel_frame_t *frame = NULL;
     fqcodel_flow_t *flow = NULL;
     struct list_head *head = NULL;
-    head = peek_flow_queues(fqcodel);
+    head = peek_flow_queues(cnx, fqcodel);
     if(!head){
         //printf("HEAD NULL\n"); 
         return NULL;
@@ -138,7 +146,7 @@ reserve_frames_block_t *fqcodel_peek(fqcodel_schedule_data_t *fqcodel)
 
 
 //Dequeue frames from FQ_CoDel
-reserve_frames_block_t *fqcodel_dequeue(fqcodel_schedule_data_t *fqcodel)
+reserve_frames_block_t *fqcodel_dequeue(picoquic_cnx_t *cnx, fqcodel_schedule_data_t *fqcodel)
 {
     //printQueueStats(fqcodel);
     struct list_head *head;
@@ -149,7 +157,7 @@ reserve_frames_block_t *fqcodel_dequeue(fqcodel_schedule_data_t *fqcodel)
     while (!frame)
     {
         //Try peek for active queues in New and Old flow queue 
-        head = peek_flow_queues(fqcodel);
+        head = peek_flow_queues(cnx, fqcodel);
         if(!head) return NULL;
         //Get flow from the choosen queue
         flow = list_first_entry(head, fqcodel_flow_t, flow_chain);
@@ -181,7 +189,7 @@ reserve_frames_block_t *fqcodel_dequeue(fqcodel_schedule_data_t *fqcodel)
     fqcodel->limit -= frame->block->total_bytes;
 
     fqcodel->backlogs[flow - fqcodel->flows] -= frame->block->total_bytes;
-    printQueueStats(fqcodel);
+    printQueueStats(cnx, fqcodel);
     return frame->block;
 }
 

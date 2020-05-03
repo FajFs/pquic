@@ -70,11 +70,6 @@ protoop_arg_t send_datagram_frame(picoquic_cnx_t* cnx)
         //my_free(cnx, tmp);
         return 1;
     }
-    if(FQ && slot->nb_frames_to_drop > 0)
-    {
-        m->send_buffer -= slot->nb_frames_to_drop;
-        PROTOOP_PRINTF(cnx, "DROPPING %d BYTES\n", slot->nb_frames_to_drop);
-    }
     m->send_buffer += frame->length;
     PROTOOP_PRINTF(cnx, "Send Buffer %d\n", m->send_buffer);
 

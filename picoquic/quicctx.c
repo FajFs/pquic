@@ -2596,7 +2596,7 @@ size_t reserve_frames(picoquic_cnx_t* cnx, uint8_t nb_frames, reserve_frame_slot
     //Only consider placing in fqcodel if both CC and compatible
     if(block->is_fqcompatible && block->is_congestion_controlled){
         //printf("QUEUING FQCODEL\n");
-          err = fqcodel_enqueue(cnx->current_plugin->fqcodel_block_queue, block);
+          err = fqcodel_enqueue(cnx, cnx->current_plugin->fqcodel_block_queue, block);
          // ;
     } else if (block->is_congestion_controlled) {
         err = queue_enqueue(cnx->current_plugin->block_queue_cc, block); 
@@ -2637,7 +2637,7 @@ reserve_frame_slot_t* cancel_head_reservation(picoquic_cnx_t* cnx, uint8_t *nb_f
     printf("cancel_head_reservation\n");
     //queue_t *block_queue = congestion_controlled ? cnx->current_plugin->block_queue_cc : cnx->current_plugin->block_queue_non_cc;
     
-    reserve_frames_block_t *block = fqcodel_dequeue(cnx->current_plugin->fqcodel_block_queue);
+    reserve_frames_block_t *block = fqcodel_dequeue(cnx, cnx->current_plugin->fqcodel_block_queue);
     
     
     if (block == NULL) {

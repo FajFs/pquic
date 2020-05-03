@@ -64,14 +64,14 @@ fqcodel_schedule_data_t *fqcodel_init();
 
 uint32_t fqcodel_hash(fqcodel_schedule_data_t *fqCodel, const void *iphdr, size_t len);
 
-int fqcodel_enqueue(fqcodel_schedule_data_t *fqCodel, reserve_frames_block_t *block);
+int fqcodel_enqueue(picoquic_cnx_t *cnx, fqcodel_schedule_data_t *fqCodel, reserve_frames_block_t *block);
 
-reserve_frames_block_t *fqcodel_dequeue(fqcodel_schedule_data_t *fqcodel);
+reserve_frames_block_t *fqcodel_dequeue(picoquic_cnx_t *cnx, fqcodel_schedule_data_t *fqcodel);
 
-reserve_frames_block_t *fqcodel_peek(fqcodel_schedule_data_t *fqcodel);
+reserve_frames_block_t *fqcodel_peek(picoquic_cnx_t *cnx, fqcodel_schedule_data_t *fqcodel);
 
 //function to print basic infromation for debugging purposes
-void fq_print_stats(fqcodel_schedule_data_t *fq_codel);
+void fq_print_stats(picoquic_cnx_t *cnx, fqcodel_schedule_data_t *fq_codel);
 
 static inline void fqcodel_destroy(fqcodel_schedule_data_t *fqcodel)
 {

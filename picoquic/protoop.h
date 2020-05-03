@@ -49,6 +49,10 @@ static inline uint64_t hash_value_str(char *str_pid)
 
 /* @{ */ 
 
+#define PROTOOPID_NOPARAM_UPDATE_FRAMES_DROPPED "update_frames_dropped"
+extern protoop_id_t PROTOOP_NOPARAM_UPDATE_FRAMES_DROPPED;
+
+
 /**
  * Parse the frame on the wire pointed by \p bytes whose the type is provided as parameter and provides the structure \p frame containing the frame information.
  * \param[in] bytes \b uint8_t* Pointer to the start of the in binary format to parse
@@ -61,6 +65,9 @@ static inline uint64_t hash_value_str(char *str_pid)
  */
 #define PROTOOPID_PARAM_PARSE_FRAME "parse_frame"
 extern protoop_id_t PROTOOP_PARAM_PARSE_FRAME;
+
+
+
 
 /**
  * Process the parsed frame \p frame whose the type is provided as parameter.
