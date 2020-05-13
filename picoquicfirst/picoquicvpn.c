@@ -493,7 +493,7 @@ int quic_server(const char* server_name, int server_port,
                         print_address((struct sockaddr *) &client_from, "Client address:",
                                       picoquic_get_logging_cnxid(cnx_server));
                         picoquic_log_transport_extension(stdout, cnx_server, 1);
-                        picoquic_log_congestion_state(stdout, cnx_server, current_time);
+                        //picoquic_log_congestion_state(stdout, cnx_server, current_time);
 
                     }
                 } else if (cnx_server != NULL && cnx_server->cnx_state >= picoquic_state_server_almost_ready) {
@@ -588,7 +588,7 @@ int quic_server(const char* server_name, int server_port,
                                                                        peer_addr, peer_addr_len, local_addr, local_addr_len,
                                                                        picoquic_get_local_if_index(path),
                                                                        (const char*)send_buffer, (int)send_length);
-                            picoquic_log_congestion_state(stdout, cnx_server, current_time);
+                            //picoquic_log_congestion_state(stdout, cnx_server, current_time);
                             /* TODO: log sending packet. */
                         } else {
                             break;
@@ -937,7 +937,7 @@ int quic_client(const char* ip_address_text, int server_port, const char * sni,
                     if (ret != 0) {
                         picoquic_log_error_packet(F_log, buffer, (size_t) bytes_recv, ret);
                     }
-                    picoquic_log_congestion_state(stdout, cnx_client, current_time);
+                    //picoquic_log_congestion_state(stdout, cnx_client, current_time);
                 } else {
                     handle_tun_read(cnx_client, tun_fd, buffer, bytes_recv);
                 }
@@ -1010,7 +1010,7 @@ int quic_client(const char* ip_address_text, int server_port, const char * sni,
                         picoquic_log_packet_address(F_log,
                                                     picoquic_val64_connection_id(picoquic_get_logging_cnxid(cnx_client)),
                                                     cnx_client, (struct sockaddr*)&server_address, 0, bytes_sent, current_time);
-                        picoquic_log_congestion_state(stdout, cnx_client, current_time);
+                        //picoquic_log_congestion_state(stdout, cnx_client, current_time);
                     }
                 }
 
