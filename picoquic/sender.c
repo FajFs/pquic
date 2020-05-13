@@ -2812,7 +2812,7 @@ size_t picoquic_frame_fair_reserve(picoquic_cnx_t *cnx, picoquic_path_t *path_x,
     // printf("smothed RTT: %lu\n", path_x->smoothed_rtt);
     // printf("bit: %lu\n",path_x->bytes_in_transit);
     // printf("path->cwin %lu\n", path_x->cwin);
-    uint64_t max_plugin_cwin = 75000;
+    uint64_t max_plugin_cwin = 50000;
                      
     uint64_t total_plugin_bytes_in_flight = 0;
 
@@ -2840,7 +2840,11 @@ size_t picoquic_frame_fair_reserve(picoquic_cnx_t *cnx, picoquic_path_t *path_x,
                 //            printf("FRAME SCHEDULING\n\tCONSIDERING FQCODEL \n");
                 should_wake_now |= !block->low_priority;    // we should wake now as soon as there is a high priority block
                 block = (reserve_frames_block_t *)fqcodel_dequeue(cnx, p->fqcodel_block_queue);               
-                //if(block == NULL) continue;
+                if(block == NULL)
+                {
+                    free(block);
+                    continue;
+                } 
                 
                 // protoop_id_t pid;
                 // pid.id = "update_frames_dropped";
@@ -2869,7 +2873,12 @@ size_t picoquic_frame_fair_reserve(picoquic_cnx_t *cnx, picoquic_path_t *path_x,
         total_plugin_bytes_in_flight += p->bytes_in_flight;
     } while ((p = get_next_plugin(cnx, p)) != cnx->first_drr);
 
-    
+    // printf("time: %lu\n", picoquic_current_time());
+    // printf("reserved_frames: %u\n",cnx->reserved_frames->size);
+    // printf("retry_frames: %u\n",cnx->retry_frames->size);
+    // printf("block_queue_cc: %u\n",p->block_queue_cc->size);
+    // printf("block_queue_non_cc: %u\n",p->block_queue_non_cc->size);
+
     
     p = cnx->first_drr;
     /* Second pass: consider only under-rated plugins with CC */
