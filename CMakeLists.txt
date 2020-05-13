@@ -76,8 +76,6 @@ SET(PICOQUIC_LIBRARY_FILES
         picoquic/jenkinsHash.h
         picoquic/fqCoDel.c
         picoquic/fqCoDel.h
-        picoquic/coDel.c
-        picoquic/coDel.h
         picoquic/list.h
 )
 
