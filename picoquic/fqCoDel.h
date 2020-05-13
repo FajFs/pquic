@@ -2,7 +2,7 @@
 #define FQCODEL_H
 
 #include "picoquic.h"
-#include "coDel.h"
+
 
 #include <linux/ip.h>
 #include <stdio.h>
@@ -16,16 +16,44 @@
 #define IP_HEADER_PARAMS 5
 #endif
 
-#ifndef NUM_FLOWS
-#define NUM_FLOWS 8
-#endif
+
 
 #ifndef MAX_MTU
 #define MAX_MTU   1403
 #endif
 //Structures in this implementation will mimic the API available in pQUIC 
 
+/************** CoDel PARAMS AND FUNCTIONS **************/
+//structures to maintain Codel queues
+typedef struct st_codel_params {
+	uint64_t	target;
+	uint64_t	interval;
+}codel_params_t;
 
+//follwoing IETF recommendation
+//Defining structure to handle CoDel variables
+typedef struct st_codel_vars{
+    uint32_t    count;             //number of dropped packets
+    bool        dropping;          //currently dropping?
+    uint16_t    rec_inv_sqrt;        //reciprocal sqrt computaion
+    uint64_t    first_above_time;    //when delay above target
+    uint64_t    drop_next;         //next time to drop
+    uint64_t    lDelay;            //sjourn time of last dequeued packet
+}codel_vars_t;
+
+static void init_codel_params(codel_params_t *params){
+    //TODO: fix correct parameters
+    params->interval = 150000   ; //100ms
+    params->target =  5000 ; //10ms
+}
+
+
+static void init_codel_vars(codel_vars_t *vars){
+    memset(vars, 0, sizeof(*vars));
+}
+
+
+/************** FQ CoDel PARAMS AND FUNCTIONS **************/
 typedef struct st_codel_frame{
     uint64_t enqueue_time;
     reserve_frames_block_t *block;
@@ -50,9 +78,7 @@ typedef struct st_fqcodel_schedule_data{
     uint32_t                perturbation;
     uint32_t                quantum;
     codel_params_t          codel_params;
-    codel_stats_t           codel_stats;
     uint32_t                limit;
-    //uint32_t              memory_usage;
     uint32_t                drop_overlimit;
     uint32_t                new_flow_count;
     struct list_head        new_flows;

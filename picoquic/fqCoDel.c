@@ -5,22 +5,31 @@
 //value common bdp --> 50 mbit/s * 26 ms
 #define STATIC_BDP 162500
 //#define QUEUE_SIZE 375000
-#define QUEUE_SIZE 75000
+#define QUEUE_SIZE 10000000
+
+#define DBG false
+
+#ifndef NUM_FLOWS
+#define SHIFT 4
+#define NUM_FLOWS 2 << SHIFT
+#endif
 
 void printQueueStats(picoquic_cnx_t *cnx, fqcodel_schedule_data_t *f)
-{
-    uint64_t t = picoquic_current_time();
-    printf("\n Active Flows: %d\n",f->new_flow_count);
-    printf("TIME: %6ld\n",t);
-    printf("\nBUFFER: %d %lu\n", f->limit, t);
-
-    printf("DROPPED: %6d %lu\n", f->drop_overlimit, t);
-    for(int i = 0; i < NUM_FLOWS; i++)
-    {   
-        //  printf("\tQ: %2u BACKLOG %6d\n",
-        //         i, f->backlogs[i]);
-        printf("\tQ: %2u BACKLOG %6d SIZE %6lu CREDITS %6d %lu\n",
-                i, f->backlogs[i], queue_size(f->flows[i].codel_queue), f->flows[i].credits, t);
+{   
+    if(DBG)
+    {
+        uint64_t t = picoquic_current_time();
+        printf("\n Active Flows: %d\n",f->new_flow_count);
+        printf("TIME: %6ld\n",t);
+        printf("\nBUFFER: %d %lu\n", f->limit, t);
+        printf("CoDel %ld\n", f->codel_params.interval);
+        for(int i = 0; i < NUM_FLOWS; i++)
+        {   
+            //  printf("\tQ: %2u BACKLOG %6d\n",
+            //         i, f->backlogs[i]);
+            printf("\tQ: %2u BACKLOG %6d SIZE %6lu CREDITS %6d %lu\n",
+                    i, f->backlogs[i], queue_size(f->flows[i].codel_queue), f->flows[i].credits, t);
+        }
     }
 }
 
@@ -30,7 +39,7 @@ void printQueueStats(picoquic_cnx_t *cnx, fqcodel_schedule_data_t *f)
 //returns the index to the queue to which the dataflow belongs to
 inline uint32_t fqcodel_hash(fqcodel_schedule_data_t *fqcodel, const void *hashKey, size_t len)
 {
-    return hashlittle(hashKey,  sizeof(uint32_t), 1) & hashmask(2);
+    return hashlittle(hashKey,  sizeof(uint32_t), 1) & hashmask((int)SHIFT);
 }
 
 //check if there are any flows alive
@@ -81,6 +90,7 @@ void fqcodel_drop(picoquic_cnx_t *cnx, fqcodel_schedule_data_t *fqcodel)
     fqcodel->backlogs[idx] -= bytes_dropped;
     fqcodel->limit -= bytes_dropped;
     printQueueStats(cnx, fqcodel);
+    if(DBG)printf("DROPPED_MEMORY: %6d %lu\n", fqcodel->drop_overlimit, picoquic_current_time());
 
     protoop_id_t pid;
     pid.id = "update_frames_dropped";
@@ -100,6 +110,7 @@ int fqcodel_enqueue(picoquic_cnx_t *cnx, fqcodel_schedule_data_t *fqcodel, reser
     if(codel_frame == NULL)  {return 1;}
     //enqueue the codel frame into FQ
     codel_frame->block = block;
+    codel_frame->enqueue_time = picoquic_current_time();
     //update backlogs
 
     if(queue_enqueue(flow->codel_queue, codel_frame) == 1) {return 1;}
@@ -114,9 +125,6 @@ int fqcodel_enqueue(picoquic_cnx_t *cnx, fqcodel_schedule_data_t *fqcodel, reser
         //weflow->dropped = 0;
         flow->credits = fqcodel->quantum;        
     }
-    //check for fat flows
-    //if(fqcodel->limit >= QUEUE_SIZE) block->frames->nb_frames_to_drop = fqcodel_drop(fqcodel);
-
     if(fqcodel->backlogs[idx] >= QUEUE_SIZE/fqcodel->new_flow_count)fqcodel_drop(cnx, fqcodel);
     printQueueStats(cnx, fqcodel);
     return 0;                    
@@ -144,6 +152,116 @@ reserve_frames_block_t *fqcodel_peek(picoquic_cnx_t *cnx, fqcodel_schedule_data_
     return frame->block;   
 }
 
+codel_frame_t * dequeue_function(fqcodel_schedule_data_t *fqcodel, fqcodel_flow_t *flow)
+{
+    codel_frame_t *frame = queue_dequeue(flow->codel_queue);    
+    if(!frame) return NULL;
+
+    fqcodel->backlogs[flow - fqcodel->flows] -= frame->block->total_bytes;
+    fqcodel->limit -= frame->block->total_bytes;
+    return frame;
+}
+
+void drop_function(picoquic_cnx_t *cnx, fqcodel_schedule_data_t *fqcodel, codel_frame_t *frame)
+{ 
+    fqcodel->drop_overlimit++;
+    if(DBG)printf("DROPPED_CODEL: %6d %lu\n", 0, picoquic_current_time());
+
+    //relay dropped framed to datagram plugin
+    protoop_id_t pid;
+    pid.id = "update_frames_dropped";
+    pid.hash = hash_value_str(pid.id);
+    protoop_prepare_and_run_noparam(cnx, &pid, NULL, frame->block->total_bytes, 1);
+    return;
+}
+
+
+
+static bool codel_should_drop(fqcodel_schedule_data_t *fqcodel, fqcodel_flow_t *flow, codel_frame_t *frame, uint64_t now)
+{
+	bool ok_to_drop;
+	flow->codel_vars.lDelay = now - frame->enqueue_time;
+	if (flow->codel_vars.lDelay < fqcodel->codel_params.target) {
+		/* went below - stay below for at least interval */
+		flow->codel_vars.first_above_time = 0;
+		return false;
+	}
+	ok_to_drop = false;
+	if (flow->codel_vars.first_above_time == 0) {
+		/* just went above from below. If we stay above
+		 * for at least interval we'll say it's ok to drop
+		 */
+		flow->codel_vars.first_above_time = now + fqcodel->codel_params.interval;
+	} else if (now > flow->codel_vars.first_above_time) {
+		ok_to_drop = true;
+	}
+	return ok_to_drop;
+}
+
+codel_frame_t *codel_dequeue(picoquic_cnx_t *cnx, fqcodel_schedule_data_t *fqcodel, fqcodel_flow_t *flow)
+{
+    codel_frame_t *frame = dequeue_function(fqcodel,flow);    
+    if(!frame) return NULL;
+
+	uint64_t now = picoquic_current_time();
+	bool drop = codel_should_drop(fqcodel, flow, frame, now);
+    if(flow->codel_vars.dropping)
+    {
+        if(!drop)
+        {
+            flow->codel_vars.dropping = false;
+        }
+        else if(now > flow->codel_vars.drop_next)
+        {
+            while (now > flow->codel_vars.drop_next && flow->codel_vars.dropping)
+            {
+                drop_function(cnx, fqcodel, frame);
+                if(!frame) return NULL;
+                flow->codel_vars.count++;
+                frame = dequeue_function(fqcodel, flow);
+                drop = codel_should_drop(fqcodel, flow, frame, now);
+                if(DBG)printf("DROPPING STATE: %lu\n", flow->codel_vars.lDelay);
+                if(!drop)
+                {
+                    flow->codel_vars.dropping = false;
+                    if(DBG)printf("EXIT DROPPING STATE\n");
+                }
+                else
+                {
+                    flow->codel_vars.drop_next = flow->codel_vars.drop_next + fqcodel->codel_params.interval / flow->codel_vars.count;
+                    //(fqcodel->codel_params.interval * flow->codel_vars.rec_inv_sqrt << ((8 * sizeof(flow->codel_vars.rec_inv_sqrt)) >> 32 ));
+                    if(DBG)printf("DROPNEXT %lu\n", flow->codel_vars.drop_next);
+                }                
+            }           
+        } 
+    }
+    else if (drop) {
+		uint32_t delta;
+        //drop packet
+        drop_function(cnx, fqcodel, frame);
+        if(DBG)printf("ENTER DROPPING STATE\n");
+        flow->codel_vars.count++;
+        frame = dequeue_function(fqcodel, flow);
+        if(!frame) return NULL;
+
+        drop = codel_should_drop(fqcodel, flow, frame, now);
+        flow->codel_vars.dropping = true;
+        if(flow->codel_vars.lDelay < fqcodel->codel_params.interval)
+        {
+            flow->codel_vars.count = flow->codel_vars.count > 2 ? flow->codel_vars.count - 2 : 1;
+        }
+        else
+        {
+            flow->codel_vars.count = 1;
+        }
+        flow->codel_vars.drop_next = now + fqcodel->codel_params.interval / flow->codel_vars.count; 
+        //(fqcodel->codel_params.interval * flow->codel_vars.rec_inv_sqrt << ((8 * sizeof(flow->codel_vars.rec_inv_sqrt)) >> 32 ));	
+        if(DBG)printf("DROPNEXT %lu\n", flow->codel_vars.drop_next);
+     }
+    if(DBG)printf("SJOURN_TIME %lu %lu %ld\n",flow->codel_vars.lDelay, picoquic_current_time(), flow - fqcodel->flows);
+	return frame;
+}
+
 
 //Dequeue frames from FQ_CoDel
 reserve_frames_block_t *fqcodel_dequeue(picoquic_cnx_t *cnx, fqcodel_schedule_data_t *fqcodel)
@@ -169,7 +287,8 @@ reserve_frames_block_t *fqcodel_dequeue(picoquic_cnx_t *cnx, fqcodel_schedule_da
             continue;
         }
         //if the flow has data to send move it last in new flows to keep fair
-        frame = queue_dequeue(flow->codel_queue);
+        frame = codel_dequeue(cnx, fqcodel, flow);
+        
        //if flow is new and there exists frames in the old flows --> move current flow to old flows to prevent starvation
         if(!frame)
         {
@@ -186,10 +305,11 @@ reserve_frames_block_t *fqcodel_dequeue(picoquic_cnx_t *cnx, fqcodel_schedule_da
     }
     //Update the choosen flows credits
     flow->credits -= frame->block->total_bytes;
-    fqcodel->limit -= frame->block->total_bytes;
+    //fqcodel->limit -= frame->block->total_bytes;
 
-    fqcodel->backlogs[flow - fqcodel->flows] -= frame->block->total_bytes;
+    //fqcodel->backlogs[flow - fqcodel->flows] -= frame->block->total_bytes;
     printQueueStats(cnx, fqcodel);
+    //printf("TIME: %lu", frame->enqueue_time);
     return frame->block;
 }
 
@@ -215,11 +335,8 @@ fqcodel_schedule_data_t *fqcodel_init()
     INIT_LIST_HEAD(&fqcodel->old_flows);
 
     //initiate the CoDel params and stats according to the linux implementation
-    //init_codel_params(&fqcodel->codel_params);
-    //init_codel_stats(&fqcodel->codel_stats);
-    //->codel_params.ecn = true;
-    //fqcodel->codel_params.mtu = MAX_MTU; //TODO: cope with varying MTUs
-
+    init_codel_params(&fqcodel->codel_params);
+    
     //allocate memory for flowsCount number of flows
     fqcodel->flows = malloc( fqcodel->flows_count * sizeof(fqcodel_flow_t));
     if(fqcodel == NULL)
@@ -238,7 +355,8 @@ fqcodel_schedule_data_t *fqcodel_init()
         f->codel_queue = queue_init();
         fqcodel->backlogs[i] = 0;
         fqcodel->flows[i].credits = 0;
-        INIT_LIST_HEAD(&f->flow_chain);        //init_codel_vars(&f->codel_vars);
+        INIT_LIST_HEAD(&f->flow_chain);        
+        init_codel_vars(&f->codel_vars);
     }
     return fqcodel;
 }
