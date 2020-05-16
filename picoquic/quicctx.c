@@ -2635,9 +2635,9 @@ reserve_frame_slot_t* cancel_head_reservation(picoquic_cnx_t* cnx, uint8_t *nb_f
     PUSH_LOG_CTX(cnx, "\"plugin\": \"%s\", \"protoop\": \"%s\", \"anchor\": \"%s\"",  cnx->current_plugin->name, cnx->current_protoop->name, pluglet_type_name(cnx->current_anchor));
 
     printf("cancel_head_reservation\n");
-    //queue_t *block_queue = congestion_controlled ? cnx->current_plugin->block_queue_cc : cnx->current_plugin->block_queue_non_cc;
+    queue_t *block_queue = congestion_controlled ? cnx->current_plugin->block_queue_cc : cnx->current_plugin->block_queue_non_cc;
     
-    reserve_frames_block_t *block = fqcodel_dequeue(cnx, cnx->current_plugin->fqcodel_block_queue);
+    reserve_frames_block_t *block = queue_dequeue(block_queue);
     
     
     if (block == NULL) {

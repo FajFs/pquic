@@ -43,7 +43,7 @@ typedef struct st_codel_vars{
 
 static void init_codel_params(codel_params_t *params){
     //TODO: fix correct parameters
-    params->interval = 150000   ; //100ms
+    params->interval = 100000   ; //100ms
     params->target =  5000 ; //10ms
 }
 

@@ -7,7 +7,7 @@
 //#define QUEUE_SIZE 375000
 #define QUEUE_SIZE 10000000
 
-#define DBG false
+#define DBG true
 
 #ifndef NUM_FLOWS
 #define SHIFT 4
@@ -80,6 +80,9 @@ void fqcodel_drop(picoquic_cnx_t *cnx, fqcodel_schedule_data_t *fqcodel)
 	while (max_backlog > allowed_buffered_bytes)
     {
         frame = queue_dequeue(flow->codel_queue);
+        if(!frame) continue;
+        free(frame->block);
+        free(frame);
         bytes_dropped += frame->block->total_bytes;
         max_backlog -= bytes_dropped;
         frames_dropped++;
@@ -172,6 +175,8 @@ void drop_function(picoquic_cnx_t *cnx, fqcodel_schedule_data_t *fqcodel, codel_
     pid.id = "update_frames_dropped";
     pid.hash = hash_value_str(pid.id);
     protoop_prepare_and_run_noparam(cnx, &pid, NULL, frame->block->total_bytes, 1);
+    free(frame->block);
+    free(frame);
     return;
 }
 
@@ -216,9 +221,10 @@ codel_frame_t *codel_dequeue(picoquic_cnx_t *cnx, fqcodel_schedule_data_t *fqcod
             while (now > flow->codel_vars.drop_next && flow->codel_vars.dropping)
             {
                 drop_function(cnx, fqcodel, frame);
-                if(!frame) return NULL;
+
                 flow->codel_vars.count++;
                 frame = dequeue_function(fqcodel, flow);
+                if(!frame) return NULL;
                 drop = codel_should_drop(fqcodel, flow, frame, now);
                 if(DBG)printf("DROPPING STATE: %lu\n", flow->codel_vars.lDelay);
                 if(!drop)

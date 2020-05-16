@@ -18,6 +18,9 @@
 #define SEND_BUFFER 10000000
 #define RECV_BUFFER 10000000
 
+// #define SEND_BUFFER 900000
+// #define RECV_BUFFER 500000
+
 #ifdef FQ_COMPATIBLE
 #define FQ 1
 #else
