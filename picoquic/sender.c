@@ -2784,6 +2784,12 @@ protoop_arg_t update_frames_dropped(picoquic_cnx_t *cnx)
     return 0;
 }
 
+//modify according to evaluationTestbed.py
+#define PATH_A    167837698 // 10.1.0.2
+#define PATH_B    167837954 // 10.1.1.2
+#define SERVER_IP 167903746 // 10.2.2.2
+#define CWIN_A 50000
+#define CWIN_B 50000
 /* This implements a deficit round robin with bursts */
 size_t picoquic_frame_fair_reserve(picoquic_cnx_t *cnx, picoquic_path_t *path_x, picoquic_stream_head* stream, uint64_t frame_mss)
 {
@@ -2823,7 +2829,26 @@ size_t picoquic_frame_fair_reserve(picoquic_cnx_t *cnx, picoquic_path_t *path_x,
         return;
     }
     */
+   
 
+    struct sockaddr_in *sin = (struct sockaddr_in *)&path_x->local_addr;
+    int local_ip = ntohl(sin->sin_addr.s_addr);
+    //calculate server cwin
+    if(local_ip == SERVER_IP)                                      
+    {
+        struct sockaddr_in *sout = (struct sockaddr_in *)&path_x->peer_addr;
+        int remote_ip = ntohl(sout->sin_addr.s_addr);
+        if      (remote_ip == PATH_A) max_plugin_cwin = CWIN_A;   
+        else if (remote_ip == PATH_B) max_plugin_cwin = CWIN_B;   
+    }
+    //calculate client cwin
+    else if(local_ip == PATH_A || local_ip == PATH_B)
+    {
+        if      (local_ip == PATH_A) max_plugin_cwin = CWIN_A;  
+        else if (local_ip == PATH_B) max_plugin_cwin = CWIN_B;   
+    }
+    //update cwin with static BDP
+    path_x->cwin = max_plugin_cwin;
     bool should_wake_now = false;
     size_t queued_bytes = 0;
 
