@@ -7,7 +7,7 @@
 //#define QUEUE_SIZE 375000
 #define QUEUE_SIZE 10000000
 
-#define DBG false
+#define DBG true
 
 #ifndef NUM_FLOWS
 #define SHIFT 6

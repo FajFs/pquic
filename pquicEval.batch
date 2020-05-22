@@ -1,0 +1,43 @@
+# -*- mode:conf -*-
+
+
+[Batch::global]
+# These are all Flent parameters that correspond to command line options.
+extended_metadata = yes
+debug_error = yes
+debug_log = yes
+title = ${batch_title} rep:${repetition}
+output_path = batch-${batch_time}-${batch_title}/${batch_name}
+ip_version = 4
+length = 30
+hosts = 10.4.0.1
+
+
+filename_extra = -${repetition}
+repetitions = 1
+
+pause = 5
+abstract = yes
+
+# These are the actual batches that will be run. Each of them just inherits from
+# 'global' and overrides some variables.
+[Batch::tcp_1down]
+inherits = global
+test_name = tcp_1down
+disabled = no
+
+[Batch::tcp_2down_delay]
+inherits = global
+test_name = tcp_2down_delay
+disabled = no
+
+[Batch::tcp_4down]
+inherits = global
+test_name = tcp_4down
+disabled = no
+
+[Batch::rrul]
+inherits = global
+test_name = rrul
+disabled = no
+

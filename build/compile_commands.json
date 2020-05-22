@@ -1,0 +1,317 @@
+[
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/cubic.c.o   -c /home/fajfs/code/c/pquic/picoquic/cubic.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/cubic.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/endianness.c.o   -c /home/fajfs/code/c/pquic/picoquic/endianness.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/endianness.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/fnv1a.c.o   -c /home/fajfs/code/c/pquic/picoquic/fnv1a.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/fnv1a.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/frames.c.o   -c /home/fajfs/code/c/pquic/picoquic/frames.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/frames.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/getset.c.o   -c /home/fajfs/code/c/pquic/picoquic/getset.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/getset.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/http0dot9.c.o   -c /home/fajfs/code/c/pquic/picoquic/http0dot9.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/http0dot9.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/intformat.c.o   -c /home/fajfs/code/c/pquic/picoquic/intformat.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/intformat.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/logger.c.o   -c /home/fajfs/code/c/pquic/picoquic/logger.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/logger.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/memory.c.o   -c /home/fajfs/code/c/pquic/picoquic/memory.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/memory.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/memcpy.c.o   -c /home/fajfs/code/c/pquic/picoquic/memcpy.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/memcpy.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/newreno.c.o   -c /home/fajfs/code/c/pquic/picoquic/newreno.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/newreno.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/packet.c.o   -c /home/fajfs/code/c/pquic/picoquic/packet.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/packet.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/picohash.c.o   -c /home/fajfs/code/c/pquic/picoquic/picohash.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/picohash.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/picosocks.c.o   -c /home/fajfs/code/c/pquic/picoquic/picosocks.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/picosocks.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/picosplay.c.o   -c /home/fajfs/code/c/pquic/picoquic/picosplay.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/picosplay.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/plugin.c.o   -c /home/fajfs/code/c/pquic/picoquic/plugin.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/plugin.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/protoop.c.o   -c /home/fajfs/code/c/pquic/picoquic/protoop.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/protoop.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/queue.c.o   -c /home/fajfs/code/c/pquic/picoquic/queue.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/queue.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/quicctx.c.o   -c /home/fajfs/code/c/pquic/picoquic/quicctx.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/quicctx.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/sacks.c.o   -c /home/fajfs/code/c/pquic/picoquic/sacks.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/sacks.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/sender.c.o   -c /home/fajfs/code/c/pquic/picoquic/sender.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/sender.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/ticket_store.c.o   -c /home/fajfs/code/c/pquic/picoquic/ticket_store.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/ticket_store.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/tls_api.c.o   -c /home/fajfs/code/c/pquic/picoquic/tls_api.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/tls_api.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/transport.c.o   -c /home/fajfs/code/c/pquic/picoquic/transport.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/transport.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/ubpf.c.o   -c /home/fajfs/code/c/pquic/picoquic/ubpf.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/ubpf.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/util.c.o   -c /home/fajfs/code/c/pquic/picoquic/util.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/util.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/red_black_tree.c.o   -c /home/fajfs/code/c/pquic/picoquic/red_black_tree.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/red_black_tree.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/michelfralloc/sbrk.c.o   -c /home/fajfs/code/c/pquic/picoquic/michelfralloc/sbrk.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/michelfralloc/sbrk.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/michelfralloc/michelfralloc.c.o   -c /home/fajfs/code/c/pquic/picoquic/michelfralloc/michelfralloc.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/michelfralloc/michelfralloc.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/jenkinsHash.c.o   -c /home/fajfs/code/c/pquic/picoquic/jenkinsHash.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/jenkinsHash.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/fqCoDel.c.o   -c /home/fajfs/code/c/pquic/picoquic/fqCoDel.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/fqCoDel.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/cc_common.c.o   -c /home/fajfs/code/c/pquic/picoquic/cc_common.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/cc_common.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic-core.dir/picoquic/bbr.c.o   -c /home/fajfs/code/c/pquic/picoquic/bbr.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic/bbr.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquicvpn.dir/picoquicfirst/picoquicvpn.c.o   -c /home/fajfs/code/c/pquic/picoquicfirst/picoquicvpn.c",
+  "file": "/home/fajfs/code/c/pquic/picoquicfirst/picoquicvpn.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquicvpn.dir/picoquicfirst/getopt.c.o   -c /home/fajfs/code/c/pquic/picoquicfirst/getopt.c",
+  "file": "/home/fajfs/code/c/pquic/picoquicfirst/getopt.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquicdemobench.dir/picoquicfirst/picoquicdemobench.c.o   -c /home/fajfs/code/c/pquic/picoquicfirst/picoquicdemobench.c",
+  "file": "/home/fajfs/code/c/pquic/picoquicfirst/picoquicdemobench.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquicdemobench.dir/picoquicfirst/getopt.c.o   -c /home/fajfs/code/c/pquic/picoquicfirst/getopt.c",
+  "file": "/home/fajfs/code/c/pquic/picoquicfirst/getopt.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquicdemo.dir/picoquicfirst/picoquicdemo.c.o   -c /home/fajfs/code/c/pquic/picoquicfirst/picoquicdemo.c",
+  "file": "/home/fajfs/code/c/pquic/picoquicfirst/picoquicdemo.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquicdemo.dir/picoquicfirst/getopt.c.o   -c /home/fajfs/code/c/pquic/picoquicfirst/getopt.c",
+  "file": "/home/fajfs/code/c/pquic/picoquicfirst/getopt.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic_ct.dir/picoquic_t/picoquic_t.c.o   -c /home/fajfs/code/c/pquic/picoquic_t/picoquic_t.c",
+  "file": "/home/fajfs/code/c/pquic/picoquic_t/picoquic_t.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic_ct.dir/picoquictest/ack_of_ack_test.c.o   -c /home/fajfs/code/c/pquic/picoquictest/ack_of_ack_test.c",
+  "file": "/home/fajfs/code/c/pquic/picoquictest/ack_of_ack_test.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic_ct.dir/picoquictest/cleartext_aead_test.c.o   -c /home/fajfs/code/c/pquic/picoquictest/cleartext_aead_test.c",
+  "file": "/home/fajfs/code/c/pquic/picoquictest/cleartext_aead_test.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic_ct.dir/picoquictest/cnx_creation_test.c.o   -c /home/fajfs/code/c/pquic/picoquictest/cnx_creation_test.c",
+  "file": "/home/fajfs/code/c/pquic/picoquictest/cnx_creation_test.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic_ct.dir/picoquictest/float16test.c.o   -c /home/fajfs/code/c/pquic/picoquictest/float16test.c",
+  "file": "/home/fajfs/code/c/pquic/picoquictest/float16test.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic_ct.dir/picoquictest/fnv1atest.c.o   -c /home/fajfs/code/c/pquic/picoquictest/fnv1atest.c",
+  "file": "/home/fajfs/code/c/pquic/picoquictest/fnv1atest.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic_ct.dir/picoquictest/hashtest.c.o   -c /home/fajfs/code/c/pquic/picoquictest/hashtest.c",
+  "file": "/home/fajfs/code/c/pquic/picoquictest/hashtest.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic_ct.dir/picoquictest/http0dot9test.c.o   -c /home/fajfs/code/c/pquic/picoquictest/http0dot9test.c",
+  "file": "/home/fajfs/code/c/pquic/picoquictest/http0dot9test.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic_ct.dir/picoquictest/intformattest.c.o   -c /home/fajfs/code/c/pquic/picoquictest/intformattest.c",
+  "file": "/home/fajfs/code/c/pquic/picoquictest/intformattest.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic_ct.dir/picoquictest/parseheadertest.c.o   -c /home/fajfs/code/c/pquic/picoquictest/parseheadertest.c",
+  "file": "/home/fajfs/code/c/pquic/picoquictest/parseheadertest.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic_ct.dir/picoquictest/pn2pn64test.c.o   -c /home/fajfs/code/c/pquic/picoquictest/pn2pn64test.c",
+  "file": "/home/fajfs/code/c/pquic/picoquictest/pn2pn64test.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic_ct.dir/picoquictest/sacktest.c.o   -c /home/fajfs/code/c/pquic/picoquictest/sacktest.c",
+  "file": "/home/fajfs/code/c/pquic/picoquictest/sacktest.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic_ct.dir/picoquictest/skip_frame_test.c.o   -c /home/fajfs/code/c/pquic/picoquictest/skip_frame_test.c",
+  "file": "/home/fajfs/code/c/pquic/picoquictest/skip_frame_test.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic_ct.dir/picoquictest/sim_link.c.o   -c /home/fajfs/code/c/pquic/picoquictest/sim_link.c",
+  "file": "/home/fajfs/code/c/pquic/picoquictest/sim_link.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic_ct.dir/picoquictest/socket_test.c.o   -c /home/fajfs/code/c/pquic/picoquictest/socket_test.c",
+  "file": "/home/fajfs/code/c/pquic/picoquictest/socket_test.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic_ct.dir/picoquictest/splay_test.c.o   -c /home/fajfs/code/c/pquic/picoquictest/splay_test.c",
+  "file": "/home/fajfs/code/c/pquic/picoquictest/splay_test.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic_ct.dir/picoquictest/stream0_frame_test.c.o   -c /home/fajfs/code/c/pquic/picoquictest/stream0_frame_test.c",
+  "file": "/home/fajfs/code/c/pquic/picoquictest/stream0_frame_test.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic_ct.dir/picoquictest/stresstest.c.o   -c /home/fajfs/code/c/pquic/picoquictest/stresstest.c",
+  "file": "/home/fajfs/code/c/pquic/picoquictest/stresstest.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic_ct.dir/picoquictest/ticket_store_test.c.o   -c /home/fajfs/code/c/pquic/picoquictest/ticket_store_test.c",
+  "file": "/home/fajfs/code/c/pquic/picoquictest/ticket_store_test.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic_ct.dir/picoquictest/tls_api_test.c.o   -c /home/fajfs/code/c/pquic/picoquictest/tls_api_test.c",
+  "file": "/home/fajfs/code/c/pquic/picoquictest/tls_api_test.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic_ct.dir/picoquictest/transport_param_test.c.o   -c /home/fajfs/code/c/pquic/picoquictest/transport_param_test.c",
+  "file": "/home/fajfs/code/c/pquic/picoquictest/transport_param_test.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic_ct.dir/picoquictest/datagram.c.o   -c /home/fajfs/code/c/pquic/picoquictest/datagram.c",
+  "file": "/home/fajfs/code/c/pquic/picoquictest/datagram.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic_ct.dir/picoquictest/microbench.c.o   -c /home/fajfs/code/c/pquic/picoquictest/microbench.c",
+  "file": "/home/fajfs/code/c/pquic/picoquictest/microbench.c"
+},
+{
+  "directory": "/home/fajfs/code/c/pquic/build",
+  "command": "/usr/bin/cc  -I/home/fajfs/code/c/pquic/picoquic -I/home/fajfs/code/c/pquic/picoquictest -I/home/fajfs/code/c/pquic/../picotls/include  -std=gnu99 -Wall -O2 -g   -g   -std=gnu11 -o CMakeFiles/picoquic_ct.dir/picoquictest/util.c.o   -c /home/fajfs/code/c/pquic/picoquictest/util.c",
+  "file": "/home/fajfs/code/c/pquic/picoquictest/util.c"
+}
+]
