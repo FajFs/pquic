@@ -7,10 +7,10 @@
 //#define QUEUE_SIZE 375000
 #define QUEUE_SIZE 10000000
 
-#define DBG true
+#define DBG false
 
 #ifndef NUM_FLOWS
-#define SHIFT 4
+#define SHIFT 6
 #define NUM_FLOWS 2 << SHIFT
 #endif
 
@@ -242,7 +242,6 @@ codel_frame_t *codel_dequeue(picoquic_cnx_t *cnx, fqcodel_schedule_data_t *fqcod
         } 
     }
     else if (drop) {
-		uint32_t delta;
         //drop packet
         drop_function(cnx, fqcodel, frame);
         if(DBG)printf("ENTER DROPPING STATE\n");
