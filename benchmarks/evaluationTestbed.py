@@ -55,11 +55,11 @@ class LinuxRouter(Node):
 
 class KiteTopo(Topo):
     def build(self, **opts):
-        mqs = int(1.5 * (((opts['bw_a'] * 1000000) / 8) / 1500) * (2 * 70 / 1000.0))  # 1.5 * BDP, TODO: This assumes that packet size is 1500 bytes
+        mqs = 1500#int(1.5 * (((opts['bw_a'] * 1000000) / 8) / 1500) * (2 * 70 / 1000.0))  # 1.5 * BDP, TODO: This assumes that packet size is 1500 bytes
         opt_path1 = {'delay': str(opts['delay_ms_a']) + "ms", 'loss': opts['loss_a'], 'bw': opts['bw_a'], 'max_queue_size': mqs}
         opt_path2 = {'delay': str(opts['delay_ms_b']) + "ms", 'loss': opts['loss_b'], 'bw': opts['bw_b'], 'max_queue_size': mqs}
         print(opt_path1)
-        generic_opts = {'delay': '0ms', 'max_queue_size': 3 * 174}
+        generic_opts = {'delay': '0ms', 'max_queue_size': 1500}
         self.r1 = self.addNode('r1', cls=LinuxRouter)
         self.r2 = self.addNode('r2', cls=LinuxRouter)
         self.r3 = self.addNode('r3', cls=LinuxRouter)
@@ -79,8 +79,7 @@ def setup_ips(net):
     config = {
         'r1': {
             'r1-eth0': '10.1.0.1/24',
-            'r1-eth1': '10.2.0.1/24',
-            'r1-eth2': '10.3.0.1/24'
+            'r1-eth1': '10.2.0.1/24'
         },
         'r2': {
             'r2-eth0': '10.1.1.1/24',
