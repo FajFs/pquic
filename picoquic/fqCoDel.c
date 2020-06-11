@@ -10,7 +10,7 @@
 #define DBG false
 
 #ifndef NUM_FLOWS
-#define SHIFT 6
+#define SHIFT 9 //1024 queues
 #define NUM_FLOWS 2 << SHIFT
 #endif
 

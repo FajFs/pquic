@@ -2818,7 +2818,7 @@ size_t picoquic_frame_fair_reserve(picoquic_cnx_t *cnx, picoquic_path_t *path_x,
     // printf("smothed RTT: %lu\n", path_x->smoothed_rtt);
     // printf("bit: %lu\n",path_x->bytes_in_transit);
     // printf("path->cwin %lu\n", path_x->cwin);
-    uint64_t max_plugin_cwin = 50000;
+     uint64_t max_plugin_cwin = 50000;
                      
     uint64_t total_plugin_bytes_in_flight = 0;
 
@@ -2908,7 +2908,7 @@ size_t picoquic_frame_fair_reserve(picoquic_cnx_t *cnx, picoquic_path_t *path_x,
     p = cnx->first_drr;
     /* Second pass: consider only under-rated plugins with CC */
     do {
-        if (p->params.rate_unlimited || total_plugin_bytes_in_flight < max_plugin_cwin){
+        if (path_x->bytes_in_transit < max_plugin_cwin){
             while ((block = queue_peek(p->block_queue_cc)) != NULL &&
                    queued_bytes + block->total_bytes < frame_mss &&
                    !(stream != NULL && (!p->params.rate_unlimited && plugin_use >= max_plugin_cwin)) &&

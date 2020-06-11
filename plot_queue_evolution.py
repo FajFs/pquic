@@ -26,8 +26,8 @@ for l in lines:
 currTime = 0
 for l in lines:
     if "time:" in l:
-        currTime = (float(l.strip().split()[1]) - normalizeTime) / 1000000
-        time.append(currTime)
+        currTime = ((float(l.strip().split()[1]) - normalizeTime) / 1000000) 
+        time.append(currTime - 5000000)
 
     if "reserved_frames:" in l:
         reserved_frames.append(float(l.split()[1]))
@@ -44,26 +44,26 @@ for l in lines:
 
 
 ##SETUP PLOT FOR QUEUE MANAGEMENT##
-plt.plot(time, reserved_frames, linewidth=1, label="QUIC reserved_frames")
-plt.legend(loc="upper left")
+plt.plot(time, reserved_frames, linewidth=5, label="QUIC reserved_frames")
+plt.legend(loc="upper left", prop={"size":18})
 
-plt.plot(time, retry_frames, linewidth=1, label="QUIC retry_frames")
-plt.legend(loc="upper left")
+plt.plot(time, retry_frames, linewidth=5, label="QUIC retry_frames")
+plt.legend(loc="upper left", prop={"size":18})
 
-plt.plot(time, block_queue_cc, linewidth=1, label="Datagram block_queue_cc")
-plt.legend(loc="upper left")
+plt.plot(time, block_queue_cc, linewidth=5, label="Datagram block_queue_cc")
+plt.legend(loc="upper left", prop={"size":18})
 
-plt.plot(time, block_queue_non_cc, linewidth=1, label="Datagram block_queue_non_cc")
-plt.legend(loc="upper left")
+plt.plot(time, block_queue_non_cc, linewidth=5, label="Datagram block_queue_non_cc")
+plt.legend(loc="upper left", prop={"size":18})
 
 plt.axhline(y=0, color = "black")
-plt.xlabel('Time (s)')
-plt.ylabel('Number of frames queued')
-
+plt.xlabel('Time (s)',fontsize=18)
+plt.ylabel('Number of frames queued', fontsize=18)
 
 #plt.legend(loc="upper right")
-plt.suptitle("Queue Evolution Over Time")
-
-
+#plt.suptitle("Queue Evolution Over Time")
+plt.rcParams.update({'font.size': 22})
+plt.xticks(fontsize=18)
+plt.yticks(fontsize=18)
 plt.show()
 f.close()
