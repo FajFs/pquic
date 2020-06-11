@@ -2,16 +2,14 @@
 #include "plugin.h"
 #include "memory.h"
 #include "picoquic_internal.h"
-//value common bdp --> 50 mbit/s * 26 ms
 #define STATIC_BDP 162500
-//#define QUEUE_SIZE 375000
 #define QUEUE_SIZE 10000000
 
-#define DBG true
+#define DBG false
 
 #ifndef NUM_FLOWS
-#define SHIFT 6
-#define NUM_FLOWS 2 << SHIFT
+#define SHIFT 9 
+#define NUM_FLOWS 2 << SHIFT //1024 queues
 #endif
 
 void printQueueStats(picoquic_cnx_t *cnx, fqcodel_schedule_data_t *f)
